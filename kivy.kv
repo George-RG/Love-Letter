@@ -1,0 +1,25 @@
+MDScreen:
+
+    MDNavigationLayout:
+
+        ScreenManager:
+            id: screenManager
+
+            MainScreen:
+                name: "mainScreen"
+
+<MainScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+
+        MDTextField:
+            id: commandField
+            hint_text: "Command"
+            size_hint: None, None
+            pos_hint: {'center_x': .5, 'center_y': .5}
+            width: "300dp"
+            on_text_validate: app.sendCommand(self.text)
+                   
+        MDLabel:
+            id: commandOutput
+            halign: "center"

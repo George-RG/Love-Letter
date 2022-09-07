@@ -1,0 +1,2 @@
+class Card(object):
+    pass
