@@ -1,5 +1,5 @@
-.vscode/
-.buildozer/
-__pycache__/
-bin/
-*.pyc
+**/.vscode/
+**/.buildozer/
+**/__pycache__/
+**/bin/
+**/*.pyc
