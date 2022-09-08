@@ -17,7 +17,12 @@ class Card(object):
         pass
     
 class Card_Assasin(Card):
-    pass
+    def __init__(self):
+        self.id = 0
+        self.power = 0
+        self.name = "Assasin"
+        self.description = "If a player targets you with a guard, you eliminate them.You may discard this card when this happens."
+        
     
 class Card_Guard(Card):
     def __init__(self):
@@ -28,7 +33,7 @@ class Card_Guard(Card):
         self.description = "Guess a player's non guard card. If you are correct, that player is eliminated."
         
     def played(self, player):
-        target = player.select_player(false)
+        target = player.select_player(False)
         return "!GUARD$" + str(target) + "$" + str(player.player_id)
     
     def discarded(self, player):
@@ -49,7 +54,7 @@ class Card_Priest(Card):
         self.description = "Look at another player's card."
         
     def played(self, player):
-        target = player.select_player(false)
+        target = player.select_player(False)
         return "!PRIEST$" + str(target) + "$" + str(player.player_id)
     
     def discarded(self, player):
@@ -67,13 +72,13 @@ class Card_Baron(Card):
         self.description = "Compare hands with another player. The player with the lower card is eliminated."
         
     def played(self, player):
-        target = player.select_player(false)
+        target = player.select_player(False)
         return "!BARON$" + str(target) + "$" + str(player.player_id)
     
     def discarded(self, player):
         pass
     
-    def answer(self, playe, answer):
+    def answer(self, player, answer):
         outcome = str(answer).split("$")[1]
         
         if(outcome == "!LOSE"):
