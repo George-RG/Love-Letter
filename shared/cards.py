@@ -1,5 +1,3 @@
-import inspect
-
 class Card(object):
     def __init__(self):
         self.id = -1
@@ -16,15 +14,24 @@ class Card(object):
     def answer(self, player, answer):
         pass
     
-class Card_Assasin(Card):
+class Assassin(Card):
     def __init__(self):
+        super().__init__()
         self.id = 0
         self.power = 0
-        self.name = "Assasin"
-        self.description = "If a player targets you with a guard, you eliminate them.You may discard this card when this happens."
-        
+        self.name = "Assassin"
+        self.description = "If a player targets you with a Guard, you eliminate them and discard this card."
     
-class Card_Guard(Card):
+    def played(self, player):
+        pass
+
+    def discarded(self, player):
+        pass
+
+    def answer(self, player, answer):
+        pass
+    
+class Guard(Card):
     def __init__(self):
         super().__init__()
         self.id = 1
@@ -45,7 +52,7 @@ class Card_Guard(Card):
         else:
             return False
     
-class Card_Priest(Card):
+class Priest(Card):
     def __init__(self):
         super().__init__()
         self.id = 2
@@ -63,13 +70,13 @@ class Card_Priest(Card):
     def answer(self, player, answer):
         return answer
     
-class Card_Baron(Card):
+class Baron(Card):
     def __init__(self):
         super().__init__()
         self.id = 3
         self.power = 3
         self.name = "Baron"
-        self.description = "Compare hands with another player. The player with the lower card is eliminated."
+        self.description = "Compare hands with another player. The player with the least power is eliminated."
         
     def played(self, player):
         target = player.select_player(False)
@@ -85,4 +92,11 @@ class Card_Baron(Card):
             player.lost()
             
         return answer
-        
+
+
+cardList = {
+            0: {"card": Assassin, "count": 2},
+            1: {"card": Guard, "count": 5},
+            2: {"card": Priest, "count": 2},
+            3: {"card": Baron, "count": 2},
+        }
