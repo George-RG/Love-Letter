@@ -149,16 +149,15 @@ def create_room(room_id):
     return Room
 
 
-#####       STARTING MAIN       #####
+if __name__ == "__main__":
+    print("[SERVER] Starting server...")
+    server = init_server()
 
-print("[SERVER] Starting server...")
-server = init_server()
+    while True:
+        msg = input("")
 
-while True:
-    msg = input("")
-
-    if msg == "exit":
-        print("[SERVER] Shutting down server...")
-        server.shutdown(socket.SHUT_RDWR)
-        server.close()
-        break
+        if msg == "exit":
+            print("[SERVER] Shutting down server...")
+            server.shutdown(socket.SHUT_RDWR)
+            server.close()
+            break
