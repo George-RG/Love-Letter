@@ -49,6 +49,9 @@ class MainApp(MDApp):
 
         label.text = str(commandList[command](*params))
 
+    def selectList(self, list):
+        self.root.ids.screenManager.get_screen("mainScreen").ids.playerList.text = list
+
 app = MainApp()
 if __name__ == "__main__":
     MainApp().run()

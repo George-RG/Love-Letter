@@ -2,7 +2,9 @@ import socket
 import sys
 import threading
 
+sys.path.append('./shared')
 import room
+import cards
 
 PORT = 5050
 HEADER = 64

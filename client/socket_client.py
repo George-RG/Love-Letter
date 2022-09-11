@@ -5,7 +5,7 @@ import time
 PORT = 5050
 HEADER = 64
 FORMAT = 'utf-8'
-SERVER_IP = "george.local"
+SERVER_IP = "george-2.local"
 DISCONECT_MESSAGE = "!DISCONNECT"
 TIMEOUT = 10
 

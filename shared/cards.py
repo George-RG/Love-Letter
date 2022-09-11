@@ -94,8 +94,8 @@ class Baron(Card):
         return answer
 
 
-cardList = {
-            0: {"card": Assassin, "count": 2},
+card_dict = {
+            0: {"card": Assassin, "count": 1},
             1: {"card": Guard, "count": 5},
             2: {"card": Priest, "count": 2},
             3: {"card": Baron, "count": 2},
