@@ -5,6 +5,9 @@ from kivy.uix.screenmanager import Screen
 
 from kivymd.app import MDApp
 from kivymd.theming import ThemeManager
+from kivymd.uix.menu import MDDropdownMenu
+from kivy.metrics import dp
+from kivy.utils import get_color_from_hex
 
 import random
 
@@ -49,8 +52,14 @@ class MainApp(MDApp):
 
         label.text = str(commandList[command](*params))
 
-    def selectList(self, list):
-        self.root.ids.screenManager.get_screen("mainScreen").ids.playerList.text = list
+    # def selectList(self, caller, list):
+    #     self.loginUniversityMenu = MDDropdownMenu(
+    #         caller=caller,
+    #         width_mult=4,
+    #         background_color=get_color_from_hex("#383838"),
+    #         position="center",
+    #         items=[{"viewclass": "TwoLineListItem", "text": f"{uni[0]}", "secondary_text": f"{uni[1]}", "height": dp(65), "on_release": lambda uni=uni: self.loginUniversityMenuCb(uni, caller),} for uni in self.universities]
+    #     )
 
 app = MainApp()
 if __name__ == "__main__":

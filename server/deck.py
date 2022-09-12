@@ -1,15 +1,29 @@
-GUARD_ID = 1
-PRIEST_ID = 2
-BARON_ID = 3
-HANDMAID_ID = 4
-PRINCE_ID = 5
-KING_ID = 6
-COUNTESS_ID = 7
-PRINCESS_ID = 8
+import sys
+import random
+import time
 
-#START_DECK = [1,1,1,1,1,2,2,3,3,4,4,5,5,6,7,8]
-START_DECK = [1,1,2]
+sys.path.append('./shared')
+import cards
+
+class Deck():
+    def __init__(self):
+        self.deck = []
+        self.discard = []
+        self.cards_left = 0
+        self.shuffle()
+
+    def shuffle(self):
+        for card in cards.card_dict.keys():
+            for i in range(cards.card_dict[card]["count"]):
+                self.deck.append(card)   
+
+        random.shuffle(self.deck)
+        self.cards_left = len(self.deck)
+
+    def draw(self) :
+        self.cards_left -= 1
+        return self.deck.pop()
 
 
-
+    
 
