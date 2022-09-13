@@ -48,7 +48,7 @@ class Room():
             print(f"[ROOM {self.room_id}] Sending him to the lobby,")
             self.room_send(conn, "!GAME_STARTED")
             return False
-        else:
+        elif not flag:
             self.room_send(conn,"!CONNECTED")
             self.players_conn_info.update({player_id: (name, conn, addr)})
             print("[ROOM " + str(self.room_id) + "] " + "ID:" + str(player_id) + " " + str(addr) + " added to room:" + str(self.room_id) + "\n")
@@ -102,6 +102,10 @@ class Room():
                         for i in range(len(self.player_order)):
                             self.room_send(conn, "!ID: " + str(self.player_order[i]))
                         self.room_send(conn,  "!END")
+
+                        for i in range(len(self.players_game_info[player_id]["hand"])):
+                                self.room_send(conn,"!CARD_ID: " + str(self.players_game_info[player_id]["hand"][i]))
+                        self.room_send(conn, "!END")
                     else:
                         self.room_send(conn, "!FALSE")
 
@@ -133,9 +137,9 @@ class Room():
         self.suffle_players()
         self.deck = deck.Deck()
         
-        for player in self.players_conn_info.keys():
-            self.players_game_info.update({player: {"hand": [], "points": 0, "playing": False}})
-            self.players_game_info[player]["hand"].append(self.deck.draw())
+        for player_id in self.players_conn_info.keys():
+            self.players_game_info.update({player_id: {"hand": [], "points": 0, "playing": False}})
+            self.players_game_info[player_id]["hand"].append(self.deck.draw())
 
         self.active = True
 

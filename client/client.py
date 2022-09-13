@@ -20,6 +20,7 @@ class Client():
 
         msg = str(self.net.pop_msg())
         self.player_info = player.Player()
+        self.started = False
 
         if str(msg) == DISCONECT_MESSAGE:
             return "!EXIT_GAME"
@@ -119,6 +120,16 @@ class Client():
                 id = int(str(id_return).split(" ")[1])
                 self.player_order.append(id)
                 id_return = self.net.pop_msg()
+
+            card_return = self.net.pop_msg()
+            card_id = 0
+            while str(card_return) != "!END":
+                card_id = int(str(card_return).split(" ")[1])
+                self.player_info.cards.append(card_id)
+                card_return = self.net.pop_msg()
+
+            print(self.player_order)
+            print(self.player_info.cards)
 
             return "!TRUE"
         else:

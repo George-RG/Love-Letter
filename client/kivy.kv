@@ -5,10 +5,82 @@ MDScreen:
         ScreenManager:
             id: screenManager
 
-            MainScreen:
-                name: "mainScreen"
+            MenuScreen:
+                name: "MenuScreen"
 
-<MainScreen>:
+            JoinScreen:
+                name: "JoinScreen"
+
+            GameScreen:
+                name: "GameScreen"
+            
+<MenuScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        pos_hint: {'center_y':0.5}
+        adaptive_height: True
+        spacing: 20
+
+        MDFillRoundFlatButton:
+            text: "Create Game"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: (0.15, 0.15)
+
+            on_release: app.CreateRoom()
+
+        MDFillRoundFlatButton:
+            text: "Join Game"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: (0.15, 0.15)
+
+            on_release: app.root.ids.screenManager.current = "JoinScreen"
+
+        MDFillRoundFlatButton:
+            text: "Exit"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: (0.15, 0.15)
+
+            on_release: app.exitGame()
+        
+        Widget:
+            id: menuScreen
+
+<JoinScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        pos_hint: {'center_y':0.5}
+        adaptive_height: True
+        spacing: 20
+
+        MDTextField:
+            id: roomCode
+            hint_text: "Room Code"
+            helper_text: "Enter Room Code"
+            helper_text_mode: "on_focus"
+            icon_right: "numeric"
+            icon_right_color: app.theme_cls.primary_color
+            pos_hint: {'center_x':0.5}
+            size_hint_x: None
+            width: 300
+
+        MDFillRoundFlatButton:
+            text: "Join"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: (0.15, 0.15)
+
+            on_release: app.JoinRoom(roomCode.text)
+
+        MDFillRoundFlatButton:
+            text: "Back"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: (0.15, 0.15)
+
+            on_release: app.root.ids.screenManager.current = "MenuScreen"
+
+        Widget:
+            id: joinScreen
+
+<GameScreen>:
     MDBoxLayout:
         orientation: "vertical"
 
@@ -23,3 +95,4 @@ MDScreen:
         MDLabel:
             id: commandOutput
             halign: "center"
+        

@@ -11,7 +11,13 @@ from kivy.utils import get_color_from_hex
 
 import random
 
-class MainScreen(Screen):
+class GameScreen(Screen):
+    pass
+
+class MenuScreen(Screen):
+    pass
+
+class JoinScreen(Screen):
     pass
 
 class MainApp(MDApp):
@@ -31,7 +37,7 @@ class MainApp(MDApp):
         commandList = {"create": self.player.create_room, "join": self.player.join_room, "players": self.player.get_players, "start": self.player.start_game, "exit": self.player.exit, "started": self.player.has_started}
         paramList = {"create": 0, "join": 1, "players": 0, "start": 0, "exit": 0, "started": 0}
 
-        label = self.root.ids.screenManager.get_screen("mainScreen").ids.commandOutput
+        label = self.root.ids.screenManager.get_screen("GameScreen").ids.commandOutput
         
         params = []
 
@@ -51,6 +57,18 @@ class MainApp(MDApp):
             return
 
         label.text = str(commandList[command](*params))
+
+    def CreateRoom(self):
+        self.sendCommand("create")
+        self.root.ids.screenManager.current = "GameScreen"
+
+    def JoinRoom(self, room_id):
+        self.sendCommand(f"join {room_id}")
+        self.root.ids.screenManager.current = "GameScreen"
+    
+    def exitGame(self):
+        self.sendCommand("exit")
+        self.stop()
 
     # def selectList(self, caller, list):
     #     self.loginUniversityMenu = MDDropdownMenu(

@@ -5,9 +5,10 @@ import time
 PORT = 5050
 HEADER = 64
 FORMAT = 'utf-8'
-SERVER_IP = "172.19.176.1"
+SERVER_IP = "george-2.local"
 DISCONECT_MESSAGE = "!DISCONNECT"
 TIMEOUT = 10
+DEBUG = False
 
 
 class Client():
@@ -53,6 +54,7 @@ class Client():
             msg = self.messages.pop(0)
             self.new_msg -= 1
 
+            print(f"[DEBUG] Popped message: {msg}")
             return msg
         else:
             print("[TIMEOUT] No messages received in " +
