@@ -54,7 +54,8 @@ class Client():
             msg = self.messages.pop(0)
             self.new_msg -= 1
 
-            print(f"[DEBUG] Popped message: {msg}")
+            if DEBUG:
+                print(f"[DEBUG] Popped message: {msg}")
             return msg
         else:
             print("[TIMEOUT] No messages received in " +

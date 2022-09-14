@@ -111,7 +111,7 @@ def handle_client(conn, addr, name):
 
             elif msg == DISCONECT_MESSAGE:
                 print("[SERVER] " + addr[0] + ":" + str(addr[1]) + " disconnected.")
-                print("[SERVER] " + str(threading.active_count() - 2 - len(rooms)) + " active connection(s).\n") 
+                print("[SERVER] " + str(threading.active_count() - 3 - len(rooms)) + " active connection(s).\n") 
                 connected = False
                 #send(conn, "Disconnected from the server")
                 send(conn, DISCONECT_MESSAGE)

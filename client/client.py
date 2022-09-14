@@ -8,10 +8,10 @@ import player
 DISCONECT_MESSAGE = "!DISCONNECT"
 
 class Client():
-    def __init__(self, name):
+    def __init__(self, name, player_info):
         self.net = socket_client.Client(name)
         self.name = name
-        self.player_info = player.Player()
+        self.player_info = player_info
         self.started = False
         self.player_order = []
 
@@ -19,7 +19,7 @@ class Client():
         self.net.send(DISCONECT_MESSAGE)
 
         msg = str(self.net.pop_msg())
-        self.player_info = player.Player()
+        self.player_info.room_id = 0
         self.started = False
 
         if str(msg) == DISCONECT_MESSAGE:
@@ -33,7 +33,9 @@ class Client():
         room_id = str(self.net.pop_msg())
         player_id = str(self.net.pop_msg())
         
-        self.player_info = player.Player(self.name, player_id, room_id, self.net.addr)
+        self.player_info.room_id = room_id
+        self.player_info.player_id = player_id 
+        self.player_info.addr = self.net.addr
 
         response = self.net.pop_msg()
         
@@ -63,7 +65,10 @@ class Client():
             
             return "!FAIL"
         else:
-            self.player_info = player.Player(self.name, player_id, room_id, self.net.addr)
+            self.player_info.room_id = room_id
+            self.player_info.player_id = player_id 
+            self.player_info.addr = self.net.addr
+
             return str(response) + " " + str(room_id) + " " + str(player_id)
     
     def get_players(self):

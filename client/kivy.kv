@@ -11,6 +11,9 @@ MDScreen:
             JoinScreen:
                 name: "JoinScreen"
 
+            LobbyScreen:
+                name: "LobbyScreen"
+
             GameScreen:
                 name: "GameScreen"
             
@@ -80,9 +83,10 @@ MDScreen:
         Widget:
             id: joinScreen
 
-<GameScreen>:
+<LobbyScreen>:
     MDBoxLayout:
         orientation: "vertical"
+        spacing: 20
 
         MDTextField:
             id: commandField
@@ -91,8 +95,57 @@ MDScreen:
             pos_hint: {'center_x': .5, 'center_y': .5}
             width: "300dp"
             on_text_validate: app.sendCommand(self.text)
-                   
+
         MDLabel:
             id: commandOutput
             halign: "center"
-        
+
+        MDLabel:
+            id: waitingRoom
+            hint_text: "Waiting For Others"
+            halign: "center"
+
+        MDFillRoundFlatButton:
+            text: "Leave"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: (0.1, 0.1)
+
+            on_release: app.LeaveRoom()
+
+        # MDBoxLayout:
+        #     orientation: "horizontal"
+        #     spacing: 20
+
+        #     MDFillRoundFlatButton:
+        #         text: "Card 1"
+        #         pos_hint: {"center_x": .5, "center_y": .5}
+        #         size_hint: (0.1, 0.1)
+
+        #         on_release: app.root.ids.screenManager.current = "MenuScreen"
+
+        #     MDFillRoundFlatButton:
+        #         text: "Card 2"
+        #         pos_hint: {"center_x": .5, "center_y": .5}
+        #         size_hint: (0.1, 0.1)
+
+        #         on_release: app.root.ids.screenManager.current = "MenuScreen"
+
+<GameScreen>:
+    MDBoxLayout:
+        orientation: "vertical"
+        spacing: 20
+
+        MDLabel:
+            id: gameScreen
+            text: "Game Screen"
+            halign: "center"
+
+        MDFillRoundFlatButton:
+            text: "Leave"
+            pos_hint: {"center_x": .5, "center_y": .5}
+            size_hint: (0.1, 0.1)
+
+            on_release: app.LeaveRoom()
+
+    Widget:
+        id: gameScreen
