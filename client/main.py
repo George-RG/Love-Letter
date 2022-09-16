@@ -7,6 +7,8 @@ from kivy.clock import Clock
 
 from kivymd.app import MDApp
 from kivymd.theming import ThemeManager
+from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
 
 
@@ -88,8 +90,8 @@ class MainApp(MDApp):
     def LeaveRoom(self):
         self.sendCommand("exit")
         self.root.ids.screenManager.current = "MenuScreen"
-        Clock.unschedule(self.check_event)       
-    
+        Clock.unschedule(self.check_event) 
+
     def exitGame(self):
         self.sendCommand("exit")
         self.stop()
@@ -101,17 +103,24 @@ class MainApp(MDApp):
 
         if self.player.started:
             self.root.ids.screenManager.current = "GameScreen"
+            Clock.unschedule(self.check_event) 
+            # self.card_event = Clock.schedule_interval(lambda _: self.show_cards(), 0.3)
             return 
 
         self.sendCommand("started")
-            
-    # def goto_gamesrceen(self):
-    #     self.root.ids.screenManager.current = "GameScreen"
 
-    # def start_checking(self):
-    #     thread = threading.Thread(target=self.check_for_updates, args=(lambda: self.goto_gamesrceen(),))
-    #     thread.daemon = True
-    #     thread.start()
+    def show_cards(self):
+        screen = self.root.ids.screenManager.get_screen("GameScreen")
+
+        Box = MDBoxLayout(orientation="horizontal", spacing=10, adaptive_height=True)
+
+        Card_1 = MDRaisedButton(text="Card 1", pos_hint={"center_x": 0.5, "center_y": 0.5})
+        Card_2 = MDRaisedButton(text="Card 2", pos_hint={"center_x": 0.5, "center_y": 0.5})
+
+        Box.add_widget(Card_1)
+        Box.add_widget(Card_2)
+
+        screen.add_widget(Box)
 
     # def selectList(self, caller, list):
     #     self.loginUniversityMenu = MDDropdownMenu(
