@@ -4,6 +4,11 @@ from time import sleep
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
 from kivy.clock import Clock
+from kivy.core.window import Window
+from kivy.uix.image import Image
+from kivy.metrics import dp
+from kivy.utils import platform
+from kivy.uix.effectwidget import EffectWidget, MonochromeEffect
 
 from kivymd.app import MDApp
 from kivymd.theming import ThemeManager
@@ -37,6 +42,9 @@ class MainApp(MDApp):
         self.theme_cls = ThemeManager()
         self.theme_cls.primary_palette = "Red"
         self.theme_cls.theme_style = "Dark"
+
+        if (platform != "android"):
+            Window.size = (800, 800)
 
         self.createPlayer("kivy" + str(random.randint(1, 99)))
 
@@ -105,31 +113,48 @@ class MainApp(MDApp):
             self.root.ids.screenManager.current = "GameScreen"
             Clock.unschedule(self.check_event) 
             # self.card_event = Clock.schedule_interval(lambda _: self.show_cards(), 0.3)
+            self.show_cards()
             return 
 
         self.sendCommand("started")
 
     def show_cards(self):
-        screen = self.root.ids.screenManager.get_screen("GameScreen")
+        buttonContainer = self.root.ids.screenManager.get_screen("GameScreen").ids.cardsButtons
+        buttonContainer.clear_widgets()
 
-        Box = MDBoxLayout(orientation="horizontal", spacing=10, adaptive_height=True)
+        Card_1 = MDRaisedButton(size_hint = (None, None))
+        Card_1.size = (dp(170), dp(238))
+        Card_1.elevation = 0
+        Card_1.md_bg_color = self.theme_cls.bg_normal
 
-        Card_1 = MDRaisedButton(text="Card 1", pos_hint={"center_x": 0.5, "center_y": 0.5})
-        Card_2 = MDRaisedButton(text="Card 2", pos_hint={"center_x": 0.5, "center_y": 0.5})
+        Card_2 = MDRaisedButton(size_hint = (None, None))
+        Card_2.size = (dp(170), dp(238))
+        Card_2.elevation = 0
+        Card_2.md_bg_color = self.theme_cls.bg_normal
 
-        Box.add_widget(Card_1)
-        Box.add_widget(Card_2)
+        Effect_1 = EffectWidget()
+        Image_1 = Image(source="../images/guard.jpg", keep_ratio = True, allow_stretch = False)
+        Effect_1.size_hint = (None, None)
+        Effect_1.size = Card_1.size
+        Effect_1.add_widget(Image_1)
+        Card_1.add_widget(Effect_1)
 
-        screen.add_widget(Box)
+        Effect_2 = EffectWidget()
+        Image_2 = Image(source="../images/baron.jpg", keep_ratio = True, allow_stretch = False)
+        Effect_2.size_hint = (None, None)
+        Effect_2.size = Card_2.size
+        Effect_2.add_widget(Image_2)
+        Card_2.add_widget(Effect_2)
 
-    # def selectList(self, caller, list):
-    #     self.loginUniversityMenu = MDDropdownMenu(
-    #         caller=caller,
-    #         width_mult=4,
-    #         background_color=get_color_from_hex("#383838"),
-    #         position="center",
-    #         items=[{"viewclass": "TwoLineListItem", "text": f"{uni[0]}", "secondary_text": f"{uni[1]}", "height": dp(65), "on_release": lambda uni=uni: self.loginUniversityMenuCb(uni, caller),} for uni in self.universities]
-    #     )
+        Card_1.on_release = lambda : self.selectCard(Effect_1, Effect_2)
+        Card_2.on_release = lambda : self.selectCard(Effect_2, Effect_1)
+
+        buttonContainer.add_widget(Card_1)
+        buttonContainer.add_widget(Card_2)
+
+    def selectCard(self, selected, other):
+        selected.effects = []
+        other.effects = [MonochromeEffect()]
 
 app = MainApp()
 if __name__ == "__main__":
