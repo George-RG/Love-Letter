@@ -34,7 +34,7 @@ class Client():
         player_id = str(self.net.pop_msg())
         
         self.player_info.room_id = room_id
-        self.player_info.player_id = player_id 
+        self.player_info.player_id = int(player_id) 
         self.player_info.addr = self.net.addr
 
         response = self.net.pop_msg()
@@ -66,7 +66,7 @@ class Client():
             return "!FAIL"
         else:
             self.player_info.room_id = room_id
-            self.player_info.player_id = player_id 
+            self.player_info.player_id = int(player_id) 
             self.player_info.addr = self.net.addr
 
             return str(response) + " " + str(room_id) + " " + str(player_id)
@@ -78,14 +78,35 @@ class Client():
         self.net.send("!GET_PLAYERS")
 
         ret = ""
-        index = 0
 
         player = self.net.pop_msg()
-        while player != "!END_PLAYERS":
-            ret += f"{str(index)}: {player}\n"
+        while str(player) != "!END_PLAYERS":
+            player = str(player).split("$")
+
+            id = int(player[0])
+            name = str(player[1])
+
+            if str(player[2]) == "!YES": 
+                leader = True 
+            else: 
+                leader = False
+
+            self.player_info.players.update({id:{name: name, leader: leader}})
             
-            index += 1
+            ret += f"{id}: {name}"
+
+            if id == self.player_info.player_id:
+                ret += " (you)"
+
+            if leader:
+                ret += " (leader)"
+
+            ret += "\n"
+
+            print(self.player_info.player_id)
+
             player = self.net.pop_msg()
+
 
         return ret
 

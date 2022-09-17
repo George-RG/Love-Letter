@@ -65,9 +65,13 @@ class Room():
                 if str(msg) == "!GET_PLAYERS":
                     for player in self.players_conn_info.keys():
 
-                        temp = self.players_conn_info.get(player)[0]
+                        temp = f"{player}"    
+                        temp += f"${self.players_conn_info.get(player)[0]}"
                         if player == self.leader:
-                            temp += " (Leader)"
+                            temp += "$!YES"
+                        else:
+                            temp += "$!NO"
+
                         self.room_send(conn, temp)
 
                     self.room_send(conn, "!END_PLAYERS")

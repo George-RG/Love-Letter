@@ -74,7 +74,7 @@ class MainApp(MDApp):
     def CreateRoom(self):
         self.sendCommand("create")
         self.root.ids.screenManager.current = "LobbyScreen"
-        self.check_event = Clock.schedule_interval(lambda _: self.check_for_updates(), 0.5)
+        self.check_event = Clock.schedule_interval(lambda _: self.check_for_start(), 0.5)
 
     def JoinRoom(self, room_id):
         self.sendCommand(f"join {room_id}")
@@ -83,7 +83,7 @@ class MainApp(MDApp):
 
         if self.player_info.room_id != 0:
             self.root.ids.screenManager.current = "LobbyScreen"
-            self.check_event = Clock.schedule_interval(lambda _: self.check_for_updates(), 0.5)
+            self.check_event = Clock.schedule_interval(lambda _: self.check_for_start(), 0.5)
 
     def LeaveRoom(self):
         self.sendCommand("exit")
@@ -94,7 +94,7 @@ class MainApp(MDApp):
         self.sendCommand("exit")
         self.stop()
 
-    def check_for_updates(self):
+    def check_for_start(self):
        
         if self.player_info.room_id == 0:
             return
@@ -109,7 +109,7 @@ class MainApp(MDApp):
     #     self.root.ids.screenManager.current = "GameScreen"
 
     # def start_checking(self):
-    #     thread = threading.Thread(target=self.check_for_updates, args=(lambda: self.goto_gamesrceen(),))
+    #     thread = threading.Thread(target=self.check_for_start, args=(lambda: self.goto_gamesrceen(),))
     #     thread.daemon = True
     #     thread.start()
 
