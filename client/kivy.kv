@@ -44,9 +44,6 @@ MDScreen:
             size_hint: (0.15, 0.15)
 
             on_release: app.exitGame()
-        
-        Widget:
-            id: menuScreen
 
 <JoinScreen>:
     MDBoxLayout:
@@ -79,9 +76,6 @@ MDScreen:
             size_hint: (0.15, 0.15)
 
             on_release: app.root.ids.screenManager.current = "MenuScreen"
-
-        Widget:
-            id: joinScreen
 
 <LobbyScreen>:
     MDBoxLayout:
@@ -146,6 +140,10 @@ MDScreen:
             size_hint: (0.1, 0.1)
 
             on_release: app.LeaveRoom()
-
-    Widget:
-        id: gameScreen
+        
+    MDBoxLayout:
+        id: cardsButtons
+        orientation: "horizontal"
+        spacing: "15dp"
+        adaptive_size: True
+        pos_hint: {"center_x": .5, "center_y": .3}

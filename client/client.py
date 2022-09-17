@@ -154,9 +154,6 @@ class Client():
                 self.player_info.cards.append(card_id)
                 card_return = self.net.pop_msg()
 
-            print(self.player_order)
-            print(self.player_info.cards)
-
             return "!TRUE"
         else:
             return "!FALSE"

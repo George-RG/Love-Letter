@@ -1,6 +1,6 @@
 # Love Letter
 
-An mobile/desktop implementation of a board game called [Love Letter](https://en.wikipedia.org/wiki/Love_Letter_(card_game)).
+A mobile/desktop implementation of a board game called [Love Letter](https://en.wikipedia.org/wiki/Love_Letter_(card_game)).
 
 > Under Development
 
