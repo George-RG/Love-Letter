@@ -8,12 +8,12 @@ import player
 DISCONECT_MESSAGE = "!DISCONNECT"
 
 class Client():
-    def __init__(self, name, player_info):
+    def __init__(self, name,player_info):
         self.net = socket_client.Client(name)
         self.name = name
         self.player_info = player_info
         self.started = False
-        self.player_order = []
+        self.player_info.player_order = []
 
     def exit(self):
         self.net.send(DISCONECT_MESSAGE)
@@ -133,27 +133,107 @@ class Client():
         if self.started == True:
             return "!TRUE" 
 
-        self.net.send("!HAS_STARTED")
+        if self.net.check_for_interrupt("!STARTED"):
+            self.started = True
+            self.get_info()
+            return "!TRUE"
+        else:
+            return "!FALSE"
+
+
+    def get_info(self):
+        if self.player_info.room_id == 0:
+            return "!NOT_IN_ROOM"
+
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.send("!GET_INFO")
+        
         response = self.net.pop_msg()
 
         if str(response) == "!TRUE":
-            self.started = True
-            self.player_order = []
+            self.player_info.player_order = []
 
             id_return = self.net.pop_msg()
             id = 0
             while str(id_return) != "!END":
                 id = int(str(id_return).split(" ")[1])
-                self.player_order.append(id)
+                self.player_info.player_order.append(id)
                 id_return = self.net.pop_msg()
 
             card_return = self.net.pop_msg()
             card_id = 0
+            self.player_info.cards = []
             while str(card_return) != "!END":
                 card_id = int(str(card_return).split(" ")[1])
                 self.player_info.cards.append(card_id)
                 card_return = self.net.pop_msg()
 
+            self.get_moves(-1)
+
             return "!TRUE"
         else:
             return "!FALSE"
+
+    def draw_card(self):
+        if self.player_info.room_id == 0:
+            return "!NOT_IN_ROOM"
+
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.send("!DRAW_CARD")
+
+        response = self.net.pop_msg()
+        if str(response) != "!FAIL":
+            card_id = int(response)
+            self.player_info.cards.append(card_id)
+            return "!OK"
+        else:
+            if str(response) == "!NO_CARDS":
+                return "!NO_CARDS"
+
+        return "!FAIL"
+
+    def get_moves(self, move_id):
+        if self.player_info.room_id == 0:
+            return "!NOT_IN_ROOM"
+
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.send("!GET_MOVES")
+        self.net.send(str(move_id))
+
+        move_return = self.net.pop_msg()
+
+        while str(move_return) != "!END":
+            move = str(move_return).split("$")
+            
+            if move[0] == "!MOVE":
+
+                move_id = int(move[1])
+                card_id = int(move[2])
+                hunter_id = int(move[3])
+                prey_id = int(move[4])
+                eliminated_id = int(move[5])
+
+                self.player_info.move_log.append({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
+
+            move_return = self.net.pop_msg()
+
+    def play_move(self, card_id, prey_id):
+        if self.player_info.room_id == 0:
+            return "!NOT_IN_ROOM"
+
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.send("!PLAY_MOVE")
+        self.net.send(str(card_id))
+        self.net.send(str(prey_id))
+
+        response = self.net.pop_msg()
+
+        return str(response)

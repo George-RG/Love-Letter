@@ -11,9 +11,11 @@ class Player:
         self.addr = addr
 
         # GAME INFO
+        self.player_order = []
         self.cards = []
         self.players = {}
         self.points = 0
+        self.move_log = []
 
         
     

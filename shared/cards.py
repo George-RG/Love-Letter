@@ -95,8 +95,8 @@ class Baron(Card):
 
 
 card_dict = {
-            0: {"card": Assassin, "count": 1},
-            1: {"card": Guard, "count": 5},
-            2: {"card": Priest, "count": 2},
-            3: {"card": Baron, "count": 2},
+            #0: {"card": Assassin, "count": 1, "image": "./images/guard.jpg"},
+            1: {"card": Guard, "count": 5, "image": "./images/guard.jpg"},
+            #2: {"card": Priest, "count": 2, "image": "./images/baron.jpg"},
+            3: {"card": Baron, "count": 2, "image": "./images/baron.jpg"},
         }

@@ -8,7 +8,7 @@ import cards
 import deck
 
 PORT = 5050
-HEADER = 64
+HEADER = 128
 FORMAT = 'utf-8'
 DISCONECT_MESSAGE = "!DISCONNECT"
 
@@ -22,6 +22,7 @@ class Room():
 
         self.active = False
         self.player_order = []
+        self.game_moves = []
 
         self.last_winner = -1
         self.leader = -1
@@ -40,6 +41,7 @@ class Room():
             if(self.players_conn_info[player][2] == addr):
                 flag = True
                 self.room_send(conn,"!RECONNECTED")
+                self.room_send(conn, "!STARTED$!INTERRUPT")
                 print("[ROOM " + str(self.room_id) + "] " + "ID:" + str(player_id) + " " + str(addr) + " reconnected to room:" + str(self.room_id) + "\n")
                 break
 
@@ -80,13 +82,13 @@ class Room():
                     if(player_id == self.leader):
                         self.game_started = True
 
-                        if len(self.players_conn_info) < 2:
+                        if len(self.players_conn_info) < 1:
                             self.room_send(conn, "!NOT_ENOUGH_PLAYERS")
                             self.game_started = False
                             continue
 
-                        # for player in self.players_conn_info.keys():
-                        #     self.room_send(self.players_conn_info.get(player)[1], "!STARTED$!IGNORED")
+                        for player in self.players_conn_info.keys():
+                            self.room_send(self.players_conn_info.get(player)[1], "!STARTED$!INTERRUPT")
                         
                         self.room_send(self.players_conn_info.get(self.leader)[1], "!OK")
 
@@ -97,7 +99,7 @@ class Room():
                     else:
                         self.room_send(conn, "!FAIL")
                 
-                elif str(msg) == "!HAS_STARTED":
+                elif str(msg) == "!GET_INFO":
                     while not self.active and self.game_started:
                         sleep(0)
 
@@ -110,8 +112,34 @@ class Room():
                         for i in range(len(self.players_game_info[player_id]["hand"])):
                                 self.room_send(conn,"!CARD_ID: " + str(self.players_game_info[player_id]["hand"][i]))
                         self.room_send(conn, "!END")
+
                     else:
                         self.room_send(conn, "!FALSE")
+
+                elif str(msg) == "!GET_MOVES":
+                    while not self.active and self.game_started:
+                        sleep(0)
+
+                    id_length = conn.recv(HEADER).decode(FORMAT)
+                    if id_length:
+                        move_id = int(conn.recv(int(msg_length)).decode(FORMAT)) 
+                        
+                        if move_id < len(self.game_moves):
+
+                            for i in range(move_id+1,len(self.game_moves)):
+                                self.room_send(conn, f'!MOVE${i}${self.game_moves[i]["card_id"]}${self.game_moves[i]["hunter_id"]}${self.game_moves[i]["prey_id"]}${self.game_moves[i]["eliminated_id"]}')
+                            self.room_send(conn, "!END")
+
+                elif str(msg) == "!DRAW_CARD":
+                    while not self.active and self.game_started:
+                        sleep(0)
+
+                    if self.player_order[0] == player_id:
+                        card_id = int(self.deck.draw())
+                        self.players_game_info[player_id]["hand"].append(card_id)
+                        self.room_send(conn, str(card_id))
+                    else:
+                        self.room_send(conn, "!FAIL")
 
                 elif msg == DISCONECT_MESSAGE:
                     print("[ROOM " + str(self.room_id) + "] " + "ID:" + str(player_id) + " " + str(addr) + " left.\n")
@@ -143,7 +171,7 @@ class Room():
         
         for player_id in self.players_conn_info.keys():
             self.players_game_info.update({player_id: {"hand": [], "points": 0, "playing": False}})
-            self.players_game_info[player_id]["hand"].append(self.deck.draw())
+            self.players_game_info[player_id]["hand"].append(int(self.deck.draw()))
 
         self.active = True
 

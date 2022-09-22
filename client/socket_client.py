@@ -3,9 +3,9 @@ import threading
 import time
 
 PORT = 5050
-HEADER = 64
+HEADER = 128
 FORMAT = 'utf-8'
-SERVER_IP = "mitsos-2.local"
+SERVER_IP = "192.168.2.24"
 DISCONECT_MESSAGE = "!DISCONNECT"
 TIMEOUT = 10
 DEBUG = False
@@ -24,6 +24,8 @@ class Client():
 
         self.messages = []
         self.new_msg = 0
+        self.interrupts = []
+        self.new_interrupts = 0
 
         thread = threading.Thread(target=self.handle_messages, args=())
         thread.daemon = True
@@ -62,6 +64,24 @@ class Client():
                   str(TIMEOUT) + " seconds.")
             return False
 
+    def pop_interrupt(self):
+        if self.new_interrupts > 0:
+            interrupt = self.interrupts.pop(0)
+            self.new_interrupts -= 1
+            return interrupt
+        else:
+            return False
+
+    def check_for_interrupt(self,msg):
+        if self.new_interrupts > 0:
+            for interrupt in self.interrupts:
+                if str(msg) == str(interrupt):
+                    self.interrupts.remove(interrupt)
+                    self.new_interrupts -= 1
+                    return True
+        else:
+            return False
+
     def push_msg(self, msg):
         self.messages.insert(0, msg)
         self.new_msg += 1
@@ -83,9 +103,18 @@ class Client():
         while True:
             msg = self.receive()
             if msg:
+                if DEBUG:
+                    print(f"[DEBUG] Received message: {msg}")
+
+                if len(str(msg).split("$")) > 1:
+                    if str(msg).split("$")[1] == "!INTERRUPT":
+                        self.interrupts.append(str(msg).split("$")[0])
+                        self.new_interrupts += 1
+                        continue
+
                 self.new_msg += 1
                 self.messages.append(msg)
-        return
+
 
     def get_msg_list(self):
         return(self.messages)

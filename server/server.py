@@ -5,7 +5,7 @@ import threading
 import room
 
 PORT = 5050
-HEADER = 64
+HEADER = 128
 FORMAT = 'utf-8'
 DISCONECT_MESSAGE = "!DISCONNECT"
 
