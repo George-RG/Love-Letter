@@ -1,6 +1,7 @@
 import threading
 from time import sleep
 import sys
+import math
 
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
@@ -13,7 +14,7 @@ from kivy.uix.effectwidget import EffectWidget, MonochromeEffect
 
 from kivymd.app import MDApp
 from kivymd.theming import ThemeManager
-from kivymd.uix.button import MDRaisedButton
+from kivymd.uix.button import MDRaisedButton, MDFillRoundFlatButton
 from kivymd.uix.boxlayout import MDBoxLayout
 from kivymd.uix.menu import MDDropdownMenu
 
@@ -40,6 +41,12 @@ class JoinScreen(Screen):
 class GameScreen(Screen):
     pass
 
+class PlayerSelectionScreen(Screen):
+    pass
+
+class CardSelectionScreen(Screen):
+    pass
+
 class MainApp(MDApp):
     def build(self):
         self.theme_cls = ThemeManager()
@@ -55,6 +62,8 @@ class MainApp(MDApp):
     
     def createPlayer(self, name):
         self.player_info = player.Player(name)
+        self.player_info.choose_player = lambda ex, id: self.selectPlayer(ex, id)
+        self.player_info.choose_card = lambda id: self.selectTargetCard(id)
         self.client = client.Client(name,self.player_info)
         self.playing = -1
 
@@ -126,16 +135,13 @@ class MainApp(MDApp):
         self.sendCommand("started")
 
     def check_for_turn(self):
-        print(f"cards: {self.player_info.cards}")
 
         if self.playing == self.player_info.player_order[0]:
             return
 
         current_move = -1
-        if len(self.player_info.move_log) == 0:
-            current_move = -1
-        else :
-            current_move = self.player_info.move_log[-1].keys()[0] 
+        if len(self.player_info.move_log) != 0:
+            current_move = self.player_info.move_log[-1].keys()[0]
 
         self.client.get_moves(current_move)
         
@@ -148,13 +154,16 @@ class MainApp(MDApp):
             if len (self.player_info.cards) == 1:
                 self.client.draw_card()
 
+            self.player_info.selected_target = -1
+            self.player_info.selected_card = -1
+
             self.show_2_cards()
         else:
             self.show_1_card()
 
     def hide_cards(self):
         buttonContainer = self.root.ids.screenManager.get_screen("GameScreen").ids.cardsButtons
-        buttonContainer.clear_widgets()
+        buttonContainer.clear_widgets()  
 
     def show_1_card(self):
         card_id = self.player_info.cards[0]
@@ -193,6 +202,8 @@ class MainApp(MDApp):
         Effect.add_widget(Card_Image)
         Card.add_widget(Effect)
 
+        Card.on_release = lambda : cards.card_dict[card_id]["card"].played(self.player_info, self.client)
+
         buttonContainer.add_widget(Card)
 
         Card = MDRaisedButton(size_hint = (None, None), id = str(card_id2))
@@ -207,46 +218,85 @@ class MainApp(MDApp):
         Effect.add_widget(Card_Image)
         Card.add_widget(Effect)
 
+        Card.on_release = lambda : cards.card_dict[card_id2]["card"].played(self.player_info, self.client)
+
         buttonContainer.add_widget(Card)
 
-    # def show_cards(self):
-    #     buttonContainer = self.root.ids.screenManager.get_screen("GameScreen").ids.cardsButtons
-    #     buttonContainer.clear_widgets()
+    # def selectCard(self, selected, other):
+    #     selected.effects = []
+    #     other.effects = [MonochromeEffect()]
 
-    #     Card_1 = MDRaisedButton(size_hint = (None, None))
-    #     Card_1.size = (dp(170), dp(238))
-    #     Card_1.elevation = 0
-    #     Card_1.md_bg_color = self.theme_cls.bg_normal
+    def selectPlayer(self, exlude, card_id):
+        playerContainer = self.root.ids.screenManager.get_screen("PlayerSelectionScreen").ids.playersButtons
+        playerContainer.clear_widgets()
 
-    #     Card_2 = MDRaisedButton(size_hint = (None, None))
-    #     Card_2.size = (dp(170), dp(238))
-    #     Card_2.elevation = 0
-    #     Card_2.md_bg_color = self.theme_cls.bg_normal
+        for player in self.player_info.players.keys():
+            Bt = MDRaisedButton(size_hint = (None, None), id = str(player), text = str(self.player_info.players[player]["name"]))
+            Bt.size = (dp(170), dp(238))
+            Bt.elevation = 0
+            Bt.md_bg_color = self.theme_cls.bg_normal
 
-    #     Effect_1 = EffectWidget()
-    #     Image_1 = Image(source="../images/guard.jpg", keep_ratio = True, allow_stretch = False)
-    #     Effect_1.size_hint = (None, None)
-    #     Effect_1.size = Card_1.size
-    #     Effect_1.add_widget(Image_1)
-    #     Card_1.add_widget(Effect_1)
+            Bt.on_release = lambda id=player:  self.PlayerSelected(id)
+            Bt.size_hint = (None,None)
 
-    #     Effect_2 = EffectWidget()
-    #     Image_2 = Image(source="../images/baron.jpg", keep_ratio = True, allow_stretch = False)
-    #     Effect_2.size_hint = (None, None)
-    #     Effect_2.size = Card_2.size
-    #     Effect_2.add_widget(Image_2)
-    #     Card_2.add_widget(Effect_2)
+            if len(exlude) != 0:
+                for ex in exlude:
+                    if player == ex:
+                        Bt.disabled = True
 
-    #     Card_1.on_release = lambda : self.selectCard(Effect_1, Effect_2)
-    #     Card_2.on_release = lambda : self.selectCard(Effect_2, Effect_1)
+            playerContainer.add_widget(Bt)
 
-    #     buttonContainer.add_widget(Card_1)
-    #     buttonContainer.add_widget(Card_2)
+        controlContainer = self.root.ids.screenManager.get_screen("PlayerSelectionScreen").ids.controlButtons
+        
+        self.selectbtn = MDFillRoundFlatButton(id = "selectbtn", text = "Select")
+        self.selectbtn.size = (dp(170), dp(238))
+        self.selectbtn.disabled = True
+        self.selectbtn.pos_hint = {"center_x": .5, "center_y": .5}
+        self.selectbtn.on_release = lambda : cards.card_dict[card_id]["card"].played(self.player_info, self.client)
 
-    def selectCard(self, selected, other):
-        selected.effects = []
-        other.effects = [MonochromeEffect()]
+        controlContainer.add_widget(self.selectbtn)
 
+        self.root.ids.screenManager.current = "PlayerSelectionScreen"
+
+    def PlayerSelected(self, prey):
+        self.player_info.selected_target = prey
+        self.selectbtn.disabled = False
+
+    def selectTargetCard(self, card_id):
+        cardContainer = self.root.ids.screenManager.get_screen("CardSelectionScreen").ids.playersButtons
+        cardContainer.clear_widgets()
+
+        for card in cards.card_dict.keys():
+            obj = cards.card_dict[card]["card"]
+            Bt = MDRaisedButton(size_hint = (None, None), id = str(card), text = f"{obj.power} {obj.name}")
+            Bt.size = (dp(170), dp(238))
+            Bt.elevation = 1
+            Bt.md_bg_color = self.theme_cls.bg_normal
+
+            Bt.on_release = lambda id = obj.id:  self.TargetCardSelected(id)
+            Bt.size_hint = (None,None)
+
+            cardContainer.add_widget(Bt)
+
+        controlContainer = self.root.ids.screenManager.get_screen("CardSelectionScreen").ids.controlButtons
+        
+        self.selectbtn = MDFillRoundFlatButton(id = "selectbtn", text = "Select")
+        self.selectbtn.size = (dp(170), dp(238))
+        self.selectbtn.disabled = True
+        self.selectbtn.pos_hint = {"center_x": .5, "center_y": .5}
+        self.selectbtn.on_release = lambda : cards.card_dict[card_id]["card"].played(self.player_info, self.client)
+
+        controlContainer.add_widget(self.selectbtn)
+
+        self.root.ids.screenManager.current = "CardSelectionScreen"
+
+    def TargetCardSelected(self, card):
+        self.player_info.target_card = card
+        self.selectbtn.disabled = False
+
+
+         
+        
 app = MainApp()
 if __name__ == "__main__":
     MainApp().run()

@@ -16,6 +16,12 @@ MDScreen:
 
             GameScreen:
                 name: "GameScreen"
+
+            PlayerSelectionScreen:
+                name: "PlayerSelectionScreen"
+
+            CardSelectionScreen:
+                name: "CardSelectionScreen"
             
 <MenuScreen>:
     MDBoxLayout:
@@ -147,3 +153,53 @@ MDScreen:
         spacing: "15dp"
         adaptive_size: True
         pos_hint: {"center_x": .5, "center_y": .3}
+
+<PlayerSelectionScreen>:
+    MDBoxLayout:
+        id: screen
+        orientation: "vertical"
+        spacing : 20
+        
+
+        MDLabel:
+            id: lastMove
+            text: "Waiting For Others"
+            halign: "center"
+
+        
+    MDBoxLayout:
+        id: playersButtons
+        orientation: "vertical"
+        adaptive_size: True
+        pos_hint: {"center_x": .5, "center_y": .3}
+
+    MDBoxLayout:
+        id: controlButtons
+        orientation: "vertical"
+        # pos_hint: {"center_x": .5, "center_y": .3}
+        spacing: 20
+
+<CardSelectionScreen>:
+    MDBoxLayout:
+        id: screen
+        orientation: "vertical"
+        spacing : 20
+        
+
+        MDLabel:
+            id: lastMove
+            text: "Waiting For Others"
+            halign: "center"
+
+        
+    MDBoxLayout:
+        id: playersButtons
+        orientation: "vertical"
+        adaptive_size: True
+        pos_hint: {"center_x": .5, "center_y": .3}
+
+    MDBoxLayout:
+        id: controlButtons
+        orientation: "vertical"
+        # pos_hint: {"center_x": .5, "center_y": .3}
+        spacing: 20

@@ -91,7 +91,7 @@ class Client():
             else: 
                 leader = False
 
-            self.player_info.players.update({id:{name: name, leader: leader}})
+            self.player_info.players.update({id:{"name": name, "leader": leader}})
             
             ret += f"{id}: {name}"
 
@@ -102,8 +102,6 @@ class Client():
                 ret += " (leader)"
 
             ret += "\n"
-
-            print(self.player_info.player_id)
 
             player = self.net.pop_msg()
 
@@ -136,6 +134,7 @@ class Client():
         if self.net.check_for_interrupt("!STARTED"):
             self.started = True
             self.get_info()
+            self.get_players()
             return "!TRUE"
         else:
             return "!FALSE"
@@ -230,10 +229,14 @@ class Client():
         if self.started == False:
             return "!NOT_STARTED"
 
-        self.net.send("!PLAY_MOVE")
-        self.net.send(str(card_id))
-        self.net.send(str(prey_id))
+        self.net.send(f"!PLAY_MOVE${card_id}${prey_id}")
 
-        response = self.net.pop_msg()
+        
 
-        return str(response)
+        # self.net.send("!PLAY_MOVE")
+        # self.net.send(str(card_id))
+        # self.net.send(str(prey_id))
+
+        # response = self.net.pop_msg()
+
+        # return str(response)
