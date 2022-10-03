@@ -11,7 +11,7 @@ class Card(object):
     def discarded(self, player, client, prey):
         pass
     
-    def answer(self, player, answer):
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         pass
     
 class Assassin(Card):
@@ -28,7 +28,7 @@ class Assassin(Card):
     def discarded(self, player, client, prey):
         pass
 
-    def answer(self, player, answer):
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         pass
     
 class Guard(Card):
@@ -53,14 +53,31 @@ class Guard(Card):
 
     
     def discarded(self, player, client, prey, prey_card):
-        # client.play_move(self.id, prey, prey_card)
+        client.play_move(self.id, prey, prey_card)
         pass
     
-    def answer(self, player, answer):
-        if str(answer) == "!CORRECT":
-            return True
-        else:
-            return False
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        if prey_card == -1:
+            return -1
+
+        if 0 in players_info[prey_id]["hand"]:
+            used.append(players_info[prey_id]["hand"].remove(0))
+
+            while len(players_info[hunter_id]["hand"]) != 0:
+                used.append(players_info[hunter_id]["hand"].pop())
+
+            eliminated.append(hunter_id)
+            players_info[hunter_id]["eliminated"] = True
+            return hunter_id
+
+        if prey_card in players_info[prey_id]["hand"] :
+            used.append(players_info[prey_id]["hand"].remove(prey_card))
+            eliminated.append(prey_id)
+            players_info[prey_id]["eliminated"] = True
+            return prey_id
+
+        return 0
+        
     
 class Priest(Card):
     def __init__(self):
@@ -77,8 +94,8 @@ class Priest(Card):
     def discarded(self, player, client, prey):
         pass
     
-    def answer(self, player, answer):
-        return answer
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        pass
     
 class Baron(Card):
     def __init__(self):
@@ -95,13 +112,8 @@ class Baron(Card):
     def discarded(self, player, client, prey):
         pass
     
-    def answer(self, player, answer):
-        outcome = str(answer).split("$")[1]
-        
-        if(outcome == "!LOSE"):
-            player.lost()
-            
-        return answer
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        pass
 
 
 card_dict = {

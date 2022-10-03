@@ -19,6 +19,8 @@ class Room():
         self.room_id = room_id
         self.players_conn_info = {}
         self.players_game_info = {}
+        self.eliminated = []
+        self.used_cards = []
 
         self.active = False
         self.player_order = []
@@ -122,7 +124,7 @@ class Room():
 
                     id_length = conn.recv(HEADER).decode(FORMAT)
                     if id_length:
-                        move_id = int(conn.recv(int(msg_length)).decode(FORMAT)) 
+                        move_id = int(conn.recv(int(id_length)).decode(FORMAT)) 
                         
                         if move_id < len(self.game_moves):
 
@@ -140,6 +142,26 @@ class Room():
                         self.room_send(conn, str(card_id))
                     else:
                         self.room_send(conn, "!FAIL")
+
+                elif str(msg) == "!PLAY_MOVE":
+                    id_length = conn.recv(HEADER).decode(FORMAT)
+                    if id_length:
+                        move = str(conn.recv(int(id_length)).decode(FORMAT))
+                        move = str(move).split("$")
+
+                        if len(move) == 4:
+                            card_id = int(move[1])
+                            hunter_id = player_id
+                            prey_id = int(move[2])
+                            prey_card = int(move[3])
+
+                            elimination = -1
+                            if card_id in self.players_game_info[player_id]["hand"]:
+                                elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
+
+                            print(elimination)
+
+                        
 
                 elif msg == DISCONECT_MESSAGE:
                     print("[ROOM " + str(self.room_id) + "] " + "ID:" + str(player_id) + " " + str(addr) + " left.\n")
@@ -170,8 +192,10 @@ class Room():
         self.deck = deck.Deck()
         
         for player_id in self.players_conn_info.keys():
-            self.players_game_info.update({player_id: {"hand": [], "points": 0, "playing": False}})
+            self.players_game_info.update({player_id: {"hand": [], "points": 0, "playing": False, "eliminated": False, "protected": False}})
             self.players_game_info[player_id]["hand"].append(int(self.deck.draw()))
+
+        self.players_game_info[self.player_order[0]]["playing"] = True
 
         self.active = True
 

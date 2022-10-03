@@ -233,16 +233,18 @@ class MainApp(MDApp):
         for player in self.player_info.players.keys():
             Bt = MDRaisedButton(size_hint = (None, None), id = str(player), text = str(self.player_info.players[player]["name"]))
             Bt.size = (dp(170), dp(238))
-            Bt.elevation = 0
-            Bt.md_bg_color = self.theme_cls.bg_normal
+            Bt.elevation = 1
+            # Bt.md_bg_color = self.theme_cls.bg_normal
 
             Bt.on_release = lambda id=player:  self.PlayerSelected(id)
             Bt.size_hint = (None,None)
 
-            if len(exlude) != 0:
-                for ex in exlude:
-                    if player == ex:
-                        Bt.disabled = True
+            if player == self.player_info.player_id:
+                Bt.disabled = True
+                Bt.md_bg_color = self.theme_cls.bg_normal
+
+            if player in exlude:
+                Bt.disabled = True
 
             playerContainer.add_widget(Bt)
 

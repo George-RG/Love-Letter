@@ -222,14 +222,15 @@ class Client():
 
             move_return = self.net.pop_msg()
 
-    def play_move(self, card_id, prey_id):
+    def play_move(self, card_id, prey_id, pray_card = -1):
         if self.player_info.room_id == 0:
             return "!NOT_IN_ROOM"
 
         if self.started == False:
             return "!NOT_STARTED"
 
-        self.net.send(f"!PLAY_MOVE${card_id}${prey_id}")
+        self.net.send("!PLAY_MOVE")
+        self.net.send(f"!MOVE${card_id}${prey_id}${pray_card}")
 
         
 
