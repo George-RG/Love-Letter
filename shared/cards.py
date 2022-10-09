@@ -122,3 +122,4 @@ card_dict = {
             #2: {"card": Priest, "count": 2, "image": "./images/baron.jpg"},
             3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
         }
+

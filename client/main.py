@@ -269,6 +269,9 @@ class MainApp(MDApp):
         cardContainer.clear_widgets()
 
         for card in cards.card_dict.keys():
+            if card == 1:
+                continue
+
             obj = cards.card_dict[card]["card"]
             Bt = MDRaisedButton(size_hint = (None, None), id = str(card), text = f"{obj.power} {obj.name}")
             Bt.size = (dp(170), dp(238))
