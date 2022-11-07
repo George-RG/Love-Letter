@@ -22,6 +22,9 @@ MDScreen:
 
             CardSelectionScreen:
                 name: "CardSelectionScreen"
+
+            ReturnScreen:
+                name: "ReturnScreen"
             
 <MenuScreen>:
     MDBoxLayout:
@@ -195,6 +198,32 @@ MDScreen:
     MDBoxLayout:
         id: playersButtons
         orientation: "vertical"
+        adaptive_size: True
+        pos_hint: {"center_x": .5, "center_y": .3}
+
+    MDBoxLayout:
+        id: controlButtons
+        orientation: "vertical"
+        # pos_hint: {"center_x": .5, "center_y": .3}
+        spacing: 20
+
+<ReturnScreen>:
+    MDBoxLayout:
+        id: screen
+        orientation: "vertical"
+        spacing : 20
+        
+
+        MDLabel:
+            id: Owner
+            text: "Waiting For Others"
+            halign: "center"
+
+        
+    MDBoxLayout:
+        id: cardsButtons
+        orientation: "horizontal"
+        spacing: "15dp"
         adaptive_size: True
         pos_hint: {"center_x": .5, "center_y": .3}
 

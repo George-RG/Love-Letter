@@ -47,6 +47,9 @@ class PlayerSelectionScreen(Screen):
 class CardSelectionScreen(Screen):
     pass
 
+class ReturnScreen(Screen):
+    pass
+
 class MainApp(MDApp):
     def build(self):
         self.theme_cls = ThemeManager()
@@ -64,6 +67,7 @@ class MainApp(MDApp):
         self.player_info = player.Player(name)
         self.player_info.choose_player = lambda ex, id: self.selectPlayer(ex, id)
         self.player_info.choose_card = lambda id: self.selectTargetCard(id)
+        self.player_info.show_result = lambda result: self.showReturn(result)
         self.client = client.Client(name,self.player_info)
         self.playing = -1
 
@@ -136,14 +140,41 @@ class MainApp(MDApp):
 
     def check_for_turn(self):
 
+        move = self.client.check_for_interrupt("!MOVE")
+        if move != False:
+            # TODO self.client.get_moves_num()
+            if len(list(self.player_info.move_log.keys())) < self.client.get_moves_num() - 1:
+                # TODO self.client.sync()
+                self.client.sync()
+            else:
+                move = str(move).split("$")
+
+                move_id = int(move[1])
+                card_id = int(move[2])
+                hunter_id = int(move[3])
+                prey_id = int(move[4])
+                eliminated_id = int(move[5])
+
+                self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
+ 
+
+            move_id = (list(self.player_info.move_log.keys()).sort())[-1]
+            move = self.player_info.move_log[move_id]
+            
+
+            ## TODO: Update Immunity array when the immunity cards get added
+
+            if move["eliminated_id"] > 0:
+                self.player_info.eliminated.append(move["eliminated_id"])
+
+            self.waiting_for_result = True
+            Clock.unschedule(self.turn_event)
+            # TODO self.show_result()
+            self.show_result(move["card_id"], move["hunter_id"], move["prey_id"], move["eliminated_id"])
+            return        
+
         if self.playing == self.player_info.player_order[0]:
             return
-
-        current_move = -1
-        if len(self.player_info.move_log) != 0:
-            current_move = self.player_info.move_log[-1].keys()[0]
-
-        self.client.get_moves(current_move)
         
         if self.playing != self.player_info.player_order[0]:
             self.playing = self.player_info.player_order[0]
@@ -231,6 +262,10 @@ class MainApp(MDApp):
         playerContainer.clear_widgets()
 
         for player in self.player_info.players.keys():
+
+            if player in self.player_info.eliminated:
+                continue
+
             Bt = MDRaisedButton(size_hint = (None, None), id = str(player), text = str(self.player_info.players[player]["name"]))
             Bt.size = (dp(170), dp(238))
             Bt.elevation = 1
@@ -298,6 +333,45 @@ class MainApp(MDApp):
     def TargetCardSelected(self, card):
         self.player_info.target_card = card
         self.selectbtn.disabled = False
+
+    def showReturn(self, result):
+        self.root.ids.screenManager.get_screen("ReturnScreen").ids.screen.ids.Owner.text = f"{result[0]}'s Card"
+        
+        card_id = result[1]
+
+        buttonContainer = self.root.ids.screenManager.get_screen("ReturnScreen").ids.cardsButtons
+
+        buttonContainer.clear_widgets()
+
+        Card = MDRaisedButton(size_hint = (None, None), id = str(card_id))
+        Card.size = (dp(170), dp(238))
+        Card.elevation = 0
+        Card.md_bg_color = self.theme_cls.bg_normal
+
+        Effect = EffectWidget()
+        Card_Image = Image(source=cards.card_dict[card_id]["image"], keep_ratio = True, allow_stretch = False)
+        Effect.size_hint = (None, None)
+        Effect.size = Card.size
+        Effect.add_widget(Card_Image)
+        Card.add_widget(Effect)
+
+        buttonContainer.add_widget(Card)
+ 
+        controlContainer = self.root.ids.screenManager.get_screen("ReturnScreen").ids.controlButtons
+        
+        self.continuebtn = MDFillRoundFlatButton(id = "continuebtn", text = "OK")
+        self.continuebtn.size = (dp(170), dp(238))
+        self.continuebtn.disabled = False
+        self.continuebtn.pos_hint = {"center_x": .5, "center_y": .5}
+        self.continuebtn.on_release = lambda : self.sendOK()
+
+        controlContainer.add_widget(self.continuebtn)
+
+        self.root.ids.screenManager.current = "ReturnScreen"
+
+    def sendOK(self):
+        self.root.ids.screenManager.current = "GameScreen"
+        self.client.send("OK")
 
 
          

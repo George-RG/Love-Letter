@@ -131,13 +131,16 @@ class Client():
         if self.started == True:
             return "!TRUE" 
 
-        if self.net.check_for_interrupt("!STARTED"):
+        if self.net.check_for_interrupt("!STARTED") != False:
             self.started = True
             self.get_info()
             self.get_players()
             return "!TRUE"
         else:
             return "!FALSE"
+
+    def check_for_interrupt(self, interrupt):
+        return self.net.check_for_interrupt(interrupt)
 
 
     def get_info(self):
@@ -170,6 +173,58 @@ class Client():
                 card_return = self.net.pop_msg()
 
             self.get_moves(-1)
+
+            self.get_eliminations()
+
+            self.get_immunity()
+
+            return "!TRUE"
+        else:
+            return "!FALSE"
+
+    def get_eliminations(self):
+        if self.player_info.room_id == 0:
+            return "!NOT_IN_ROOM"
+
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.send("!GET_ELIMINATIONS")
+
+        response = self.net.pop_msg()
+
+        if str(response) == "!TRUE":
+            self.player_info.eliminated = []
+
+            id_return = self.net.pop_msg()
+            id = 0
+            while str(id_return) != "!END":
+                id = int(str(id_return).split(" ")[1])
+                self.player_info.eliminated.append(id)
+                id_return = self.net.pop_msg()
+
+            return "!TRUE"
+        else:
+            return "!FALSE"
+
+    def get_immunity(self):
+        if self.player_info.room_id == 0:
+            return "!NOT_IN_ROOM"
+
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.send("!GET_IMMUNITY")
+
+        response = self.net.pop_msg()
+
+        if str(response) == "!TRUE":
+            id_return = self.net.pop_msg()
+            id = 0
+            while str(id_return) != "!END":
+                id = int(str(id_return).split(" ")[1])
+                self.player_info.immune.append(id)
+                id_return = self.net.pop_msg()
 
             return "!TRUE"
         else:
@@ -218,7 +273,7 @@ class Client():
                 prey_id = int(move[4])
                 eliminated_id = int(move[5])
 
-                self.player_info.move_log.append({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
+                self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
 
             move_return = self.net.pop_msg()
 
@@ -229,15 +284,13 @@ class Client():
         if self.started == False:
             return "!NOT_STARTED"
 
+        if self.player_info.has_card(card_id) == False:
+            return "!NO_CARD"
+
         self.net.send("!PLAY_MOVE")
         self.net.send(f"!MOVE${card_id}${prey_id}${pray_card}")
 
-        
+        #TODO: Respond to UI
 
-        # self.net.send("!PLAY_MOVE")
-        # self.net.send(str(card_id))
-        # self.net.send(str(prey_id))
-
-        # response = self.net.pop_msg()
-
-        # return str(response)
+    def send(self, msg):
+        self.net.send(msg)

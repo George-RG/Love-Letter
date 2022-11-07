@@ -2,6 +2,8 @@ import threading
 import random
 import sys
 from time import sleep
+from random import random as rand
+from math import floor
 
 sys.path.append('./shared')
 import cards
@@ -20,11 +22,13 @@ class Room():
         self.players_conn_info = {}
         self.players_game_info = {}
         self.eliminated = []
+        self.immune = []
         self.used_cards = []
 
         self.active = False
         self.player_order = []
-        self.game_moves = []
+        self.game_moves = {}
+        self.max_move_id = floor(rand * 10000)
 
         self.last_winner = -1
         self.leader = -1
@@ -43,7 +47,7 @@ class Room():
             if(self.players_conn_info[player][2] == addr):
                 flag = True
                 self.room_send(conn,"!RECONNECTED")
-                self.room_send(conn, "!STARTED$!INTERRUPT")
+                self.room_send(conn, "!STARTED#!INTERRUPT")
                 print("[ROOM " + str(self.room_id) + "] " + "ID:" + str(player_id) + " " + str(addr) + " reconnected to room:" + str(self.room_id) + "\n")
                 break
 
@@ -90,7 +94,7 @@ class Room():
                             continue
 
                         for player in self.players_conn_info.keys():
-                            self.room_send(self.players_conn_info.get(player)[1], "!STARTED$!INTERRUPT")
+                            self.room_send(self.players_conn_info.get(player)[1], "!STARTED#!INTERRUPT")
                         
                         self.room_send(self.players_conn_info.get(self.leader)[1], "!OK")
 
@@ -125,12 +129,42 @@ class Room():
                     id_length = conn.recv(HEADER).decode(FORMAT)
                     if id_length:
                         move_id = int(conn.recv(int(id_length)).decode(FORMAT)) 
-                        
-                        if move_id < len(self.game_moves):
 
-                            for i in range(move_id+1,len(self.game_moves)):
-                                self.room_send(conn, f'!MOVE${i}${self.game_moves[i]["card_id"]}${self.game_moves[i]["hunter_id"]}${self.game_moves[i]["prey_id"]}${self.game_moves[i]["eliminated_id"]}')
+                        keys = list(self.game_moves.keys())
+                        keys.sort()
+                        
+                        if move_id < keys[-1]:
+                            if move_id <= keys[0]:
+                                move_id = keys[0]-1
+
+                            for key in range(move_id+1, keys[-1]+1):
+                                move = self.game_moves.get(key)
+                                if move != None:
+                                    self.room_send(conn, f'!MOVE${move["move_id"]}${move["card_id"]}${move["hunter_id"]}${move["prey_id"]}${move["eliminated_id"]}')
                             self.room_send(conn, "!END")
+
+                elif str(msg) == "!GET_ELIMINATED":
+                    while not self.active and self.game_started:
+                        sleep(0)
+
+                    if self.game_started == True:
+                        self.room_send(conn, "!TRUE")
+                        for i in range(len(self.eliminated)):
+                            self.room_send(conn, "!ID: " + str(self.eliminated[i]))
+                        self.room_send(conn, "!END")
+                    else:
+                        self.room_send(conn, "!FALSE")
+
+                elif str(msg) == "!GET_IMMUNE":
+                    while not self.active and self.game_started:
+                        sleep(0)
+                    if self.game_started == True:
+                        self.room_send(conn, "!TRUE")
+                        for i in range(len(self.immune)):
+                            self.room_send(conn, "!ID: " + str(self.immune[i]))
+                        self.room_send(conn, "!END")
+                    else:
+                        self.room_send(conn, "!FALSE")
 
                 elif str(msg) == "!DRAW_CARD":
                     while not self.active and self.game_started:
@@ -144,6 +178,10 @@ class Room():
                         self.room_send(conn, "!FAIL")
 
                 elif str(msg) == "!PLAY_MOVE":
+                    if player_id != self.player_order[0]:
+                        self.room_send(conn, "!FAIL")
+                        continue
+
                     id_length = conn.recv(HEADER).decode(FORMAT)
                     if id_length:
                         move = str(conn.recv(int(id_length)).decode(FORMAT))
@@ -157,7 +195,14 @@ class Room():
 
                             elimination = -1
                             if card_id in self.players_game_info[player_id]["hand"]:
+                                
                                 elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
+                                # TODO - check if elimination is valid
+                                # TODO - chance for no elimination and have card
+                                # TODO - transmit elimination to all players
+                            else:
+                                self.room_send(conn, "!FAIL")
+                                continue
 
                             print(elimination)
 

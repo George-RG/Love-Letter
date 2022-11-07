@@ -19,11 +19,19 @@ class Player:
         self.cards = []
         self.players = {}
         self.points = 0
-        self.move_log = []
+        self.move_log = {}
+        self.eliminated = []
+        self.immune = []
 
         # TEMP INFO FOR CURRENT MOVE
         self.selected_target = -1
         self.target_card = -1
+    
+    def has_card(self, card_id):
+        for card in self.cards:
+            if card == card_id:
+                return True
+        return False
 
         
     

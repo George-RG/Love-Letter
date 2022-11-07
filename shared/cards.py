@@ -54,7 +54,7 @@ class Guard(Card):
     
     def discarded(self, player, client, prey, prey_card):
         client.play_move(self.id, prey, prey_card)
-        pass
+        return
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         if prey_card == -1:

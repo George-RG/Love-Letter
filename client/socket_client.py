@@ -75,10 +75,11 @@ class Client():
     def check_for_interrupt(self,msg):
         if self.new_interrupts > 0:
             for interrupt in self.interrupts:
-                if str(msg) == str(interrupt):
+                if str(interrupt).find(str(msg)) != -1:
+                    temp = interrupt
                     self.interrupts.remove(interrupt)
                     self.new_interrupts -= 1
-                    return True
+                    return temp
         else:
             return False
 
@@ -106,8 +107,8 @@ class Client():
                 if DEBUG:
                     print(f"[DEBUG] Received message: {msg}")
 
-                if len(str(msg).split("$")) > 1:
-                    if str(msg).split("$")[1] == "!INTERRUPT":
+                if len(str(msg).split("#")) > 1:
+                    if str(msg).split("#")[1] == "!INTERRUPT":
                         self.interrupts.append(str(msg).split("$")[0])
                         self.new_interrupts += 1
                         continue
