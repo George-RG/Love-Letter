@@ -80,6 +80,7 @@ class Client():
         ret = ""
 
         player = self.net.pop_msg()
+        self.plauer_info.players = {}
         while str(player) != "!END_PLAYERS":
             player = str(player).split("$")
 
@@ -177,6 +178,8 @@ class Client():
             self.get_eliminations()
 
             self.get_immunity()
+
+            #TODO check if player joined while server waiting for ok
 
             return "!TRUE"
         else:
@@ -290,7 +293,36 @@ class Client():
         self.net.send("!PLAY_MOVE")
         self.net.send(f"!MOVE${card_id}${prey_id}${pray_card}")
 
-        #TODO: Respond to UI
+        response = self.net.pop_msg()
+        response = str(response).split("$")
+        if str(response[0]) == "!CARD":
+            return ((int(response[1]), int(response[2]))) # Player_ID, Card_ID
+            
+        elif str(response[0]) == "!ELIMINATION":
+            return int(response[1])
 
     def send(self, msg):
         self.net.send(msg)
+
+    def get_moves_num(self):
+        if self.player_info.room_id == 0:
+            return "!NOT_IN_ROOM"
+
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.send("!GET_MOVES_NUM")
+        response = self.net.pop_msg()
+        return int(response)
+
+    def sync_game(self):
+        if self.started == False:
+            return "!NOT_STARTED"
+
+        self.net.purge_interupts("!MOVE")
+        
+        self.get_info()
+        self.get_players()
+        
+
+    

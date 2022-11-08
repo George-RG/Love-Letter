@@ -83,6 +83,18 @@ class Client():
         else:
             return False
 
+    def purge_interrupts(self, msg):
+        if self.new_interrupts > 0:
+            flag = False
+            for interrupt in self.interrupts:
+                if str(interrupt).find(str(msg)) != -1:
+                    self.interrupts.remove(interrupt)
+                    self.new_interrupts -= 1
+                    flag = True     
+            return flag
+        else:
+            return False
+
     def push_msg(self, msg):
         self.messages.insert(0, msg)
         self.new_msg += 1
@@ -119,4 +131,6 @@ class Client():
 
     def get_msg_list(self):
         return(self.messages)
+
+    
         

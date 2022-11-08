@@ -5,6 +5,7 @@ class Player:
         # Stored functions
         self.choose_player = None
         self.choose_card = None
+        self.show_return = None
 
         #NAME
         self.name = name

@@ -50,6 +50,9 @@ class CardSelectionScreen(Screen):
 class ReturnScreen(Screen):
     pass
 
+class ResultScreen(Screen):
+    pass
+
 class MainApp(MDApp):
     def build(self):
         self.theme_cls = ThemeManager()
@@ -67,7 +70,7 @@ class MainApp(MDApp):
         self.player_info = player.Player(name)
         self.player_info.choose_player = lambda ex, id: self.selectPlayer(ex, id)
         self.player_info.choose_card = lambda id: self.selectTargetCard(id)
-        self.player_info.show_result = lambda result: self.showReturn(result)
+        self.player_info.show_return = lambda result: self.showReturn(result)
         self.client = client.Client(name,self.player_info)
         self.playing = -1
 
@@ -142,10 +145,8 @@ class MainApp(MDApp):
 
         move = self.client.check_for_interrupt("!MOVE")
         if move != False:
-            # TODO self.client.get_moves_num()
             if len(list(self.player_info.move_log.keys())) < self.client.get_moves_num() - 1:
-                # TODO self.client.sync()
-                self.client.sync()
+                self.client.sync_game()
             else:
                 move = str(move).split("$")
 
@@ -162,10 +163,11 @@ class MainApp(MDApp):
             move = self.player_info.move_log[move_id]
             
 
-            ## TODO: Update Immunity array when the immunity cards get added
+            # TODO: Update Immunity array when the immunity cards get added
 
             if move["eliminated_id"] > 0:
-                self.player_info.eliminated.append(move["eliminated_id"])
+                if move["eliminated_id"] not in self.player_info.eliminated:
+                    self.player_info.eliminated.append(move["eliminated_id"])
 
             self.waiting_for_result = True
             Clock.unschedule(self.turn_event)
@@ -363,17 +365,49 @@ class MainApp(MDApp):
         self.continuebtn.size = (dp(170), dp(238))
         self.continuebtn.disabled = False
         self.continuebtn.pos_hint = {"center_x": .5, "center_y": .5}
-        self.continuebtn.on_release = lambda : self.sendOK()
+        self.continuebtn.on_release = lambda : self.sendContinueMove()
 
         controlContainer.add_widget(self.continuebtn)
 
         self.root.ids.screenManager.current = "ReturnScreen"
 
-    def sendOK(self):
+    def sendContinueMove(self):
         self.root.ids.screenManager.current = "GameScreen"
-        self.client.send("OK")
+        self.client.send("!CONTINUE_MOVE")
 
+    def show_result(self,card_id,hunter_id,prey_id,elimination_id):
+        screen = self.root.ids.screenManager.get_screen("ResultScreen")
+        
+        text = f"{hunter_id} played {card_id} on {prey_id}"
 
+        if elimination_id > 0 :
+            text += f" and {elimination_id} got eliminated"
+        
+        screen.ids.screen.ids.Move.text = text
+
+        controlContainer = self.root.ids.screenManager.get_screen("ResultScreen").ids.controlButtons
+        
+        self.continuebtn = MDFillRoundFlatButton(id = "continuebtn", text = "OK")
+        self.continuebtn.size = (dp(170), dp(238))
+
+        if hunter_id == self.player_info.player_id:
+            self.continuebtn.disabled = False
+        else:
+            self.continuebtn.disabled = True
+
+        self.continuebtn.pos_hint = {"center_x": .5, "center_y": .5}
+        # TODO: send END_MOVE to server
+        self.continuebtn.on_release = lambda : self.sendEndMove()
+
+        controlContainer.add_widget(self.continuebtn)
+
+        self.check_event = Clock.schedule_interval(lambda _: self.check_for_end_turn(), 0.5)
+
+        self.root.ids.screenManager.current = "ResultScreen"
+
+    # TODO end the turn for the client
+    def check_for_end_turn(self):
+        pass
          
         
 app = MainApp()

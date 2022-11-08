@@ -177,6 +177,12 @@ class Room():
                     else:
                         self.room_send(conn, "!FAIL")
 
+                elif str(msg) == "!GET_MOVES_NUM":
+                    while not self.active and self.game_started:
+                        sleep(0)
+
+                    self.room_send(conn, str(len(self.game_moves)))
+
                 elif str(msg) == "!PLAY_MOVE":
                     if player_id != self.player_order[0]:
                         self.room_send(conn, "!FAIL")
@@ -197,14 +203,24 @@ class Room():
                             if card_id in self.players_game_info[player_id]["hand"]:
                                 
                                 elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
-                                # TODO - check if elimination is valid
-                                # TODO - chance for no elimination and have card
-                                # TODO - transmit elimination to all players
+                                
+                                if type(elimination) == type((0,0)):
+                                    self.room_send(conn, f"!CARD${str(elimination[0])}${str(elimination[1])}") #PLayer_ID, Card_ID
+                                    # TODO - Wait for CONTINUE_MOVE on server side
+                                    # TODO - Send hunter card to prey
+                                elif type(elimination) == type(1):
+                                    # TODO - check if elimination is valid
+                                    self.room_send(conn, f"!ELIMINATION${str(elimination)}")
+                                
                             else:
                                 self.room_send(conn, "!FAIL")
                                 continue
 
                             print(elimination)
+
+                # TODO - end the move for the server
+                elif str(msg) == "!END_MOVE":
+                    pass
 
                         
 
