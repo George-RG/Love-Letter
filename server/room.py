@@ -28,7 +28,7 @@ class Room():
         self.active = False
         self.player_order = []
         self.game_moves = {}
-        self.max_move_id = floor(rand * 10000)
+        self.max_move_id = 40000  #int(rand * 10000)
 
         self.last_winner = -1
         self.leader = -1
@@ -132,6 +132,18 @@ class Room():
 
                         keys = list(self.game_moves.keys())
                         keys.sort()
+
+                        if move_id == -1:
+                            if len(keys) <= 0:
+                                self.room_send(conn, "!END")
+                                continue
+
+                            for key in range(move_id+1, keys[-1]+1):
+                                move = self.game_moves.get(key)
+                                if move != None:
+                                    self.room_send(conn, f'!MOVE${move["move_id"]}${move["card_id"]}${move["hunter_id"]}${move["prey_id"]}${move["eliminated_id"]}')
+                            self.room_send(conn, "!END")
+
                         
                         if move_id < keys[-1]:
                             if move_id <= keys[0]:
@@ -143,7 +155,7 @@ class Room():
                                     self.room_send(conn, f'!MOVE${move["move_id"]}${move["card_id"]}${move["hunter_id"]}${move["prey_id"]}${move["eliminated_id"]}')
                             self.room_send(conn, "!END")
 
-                elif str(msg) == "!GET_ELIMINATED":
+                elif str(msg) == "!GET_ELIMINATIONS":
                     while not self.active and self.game_started:
                         sleep(0)
 
@@ -155,7 +167,7 @@ class Room():
                     else:
                         self.room_send(conn, "!FALSE")
 
-                elif str(msg) == "!GET_IMMUNE":
+                elif str(msg) == "!GET_IMMUNITY":
                     while not self.active and self.game_started:
                         sleep(0)
                     if self.game_started == True:
@@ -205,18 +217,29 @@ class Room():
                                 elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
                                 
                                 if type(elimination) == type((0,0)):
-                                    self.room_send(conn, f"!CARD${str(elimination[0])}${str(elimination[1])}") #PLayer_ID, Card_ID
-                                    # TODO - Wait for CONTINUE_MOVE on server side
-                                    # TODO - Send hunter card to prey
+                                    self.room_send(conn, f"!INTERUPT$!CARD${str(elimination[0])}${str(elimination[1])}${str(hunter_id)}") #PLayer_ID, Card_ID, Hunter_ID
+                                    self.room_send(self.players_conn_info[prey_id](1), f"!INTERUPT$!CARD${str(hunter_id)}${str(card_id)}${str(hunter_id)}")
+
+                                    self.able_to_continue = hunter_id
+                                    self.waiting_for_continue = prey_id
                                 elif type(elimination) == type(1):
                                     # TODO - check if elimination is valid
-                                    self.room_send(conn, f"!ELIMINATION${str(elimination)}")
-                                
+                                    # self.room_send(conn, f"!ELIMINATION${str(elimination)}")
+                                    pass
+
                             else:
                                 self.room_send(conn, "!FAIL")
                                 continue
 
                             print(elimination)
+
+                elif str(msg) == "!CONTINUE_MOVE":
+                    if player_id == self.able_to_continue:
+                        self.able_to_continue = -1
+                        self.room_send(conn, "!TRUE")
+
+                        self.room_send(self.players_conn_info[self.waiting_for_continue](1), f"!INTERUPT$!CONTINUE_MOVE")
+                        self.waiting_for_continue = -1
 
                 # TODO - end the move for the server
                 elif str(msg) == "!END_MOVE":

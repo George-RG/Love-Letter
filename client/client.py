@@ -80,7 +80,7 @@ class Client():
         ret = ""
 
         player = self.net.pop_msg()
-        self.plauer_info.players = {}
+        self.player_info.players = {}
         while str(player) != "!END_PLAYERS":
             player = str(player).split("$")
 
@@ -136,6 +136,7 @@ class Client():
             self.started = True
             self.get_info()
             self.get_players()
+            #TODO ability to rejoin at card view
             return "!TRUE"
         else:
             return "!FALSE"
@@ -293,13 +294,15 @@ class Client():
         self.net.send("!PLAY_MOVE")
         self.net.send(f"!MOVE${card_id}${prey_id}${pray_card}")
 
-        response = self.net.pop_msg()
-        response = str(response).split("$")
-        if str(response[0]) == "!CARD":
-            return ((int(response[1]), int(response[2]))) # Player_ID, Card_ID
-            
-        elif str(response[0]) == "!ELIMINATION":
-            return int(response[1])
+        # response = self.net.pop_msg()
+        # response = str(response).split("$")
+
+        # for i, r in enumerate(response):
+        #     if str(r) == "!CARD":
+        #         return ((int(response[i+1]), int(response[i+2]))) # Player_ID, Card_ID
+                
+        #     elif str(r) == "!ELIMINATION":
+        #         return int(response[i+1])
 
     def send(self, msg):
         self.net.send(msg)
@@ -323,6 +326,17 @@ class Client():
         
         self.get_info()
         self.get_players()
+
+        #TODO ability to rejoin at card view
         
+    def send_continue(self):
+        self.net.send("!CONTINUE_MOVE")
+
+        response = self.net.pop_msg()
+        if str(response) == "!TRUE":
+            return "!TRUE"
+        else:
+            self.send_continue()
+            return "!FALSE"
 
     

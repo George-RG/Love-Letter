@@ -171,9 +171,19 @@ class MainApp(MDApp):
 
             self.waiting_for_result = True
             Clock.unschedule(self.turn_event)
-            # TODO self.show_result()
             self.show_result(move["card_id"], move["hunter_id"], move["prey_id"], move["eliminated_id"])
             return        
+
+        temp = self.client.check_for_interrupt("!SHOW_RETURN")
+        if temp != False:
+            Clock.unschedule(self.turn_event)
+            i = 0 
+            temp = str(temp).split("$")
+            while temp[i] != "!CARD":
+                i += 1
+            
+            ret = (temp[i+1],temp[+2],temp[i+3]) # (prey_id,card_id,hunter_id)
+            self.showReturn(ret)
 
         if self.playing == self.player_info.player_order[0]:
             return
@@ -190,8 +200,10 @@ class MainApp(MDApp):
             self.player_info.selected_target = -1
             self.player_info.selected_card = -1
 
+            self.showing_cards = 2
             self.show_2_cards()
         else:
+            self.showing_cards = 1
             self.show_1_card()
 
     def hide_cards(self):
@@ -363,7 +375,13 @@ class MainApp(MDApp):
         
         self.continuebtn = MDFillRoundFlatButton(id = "continuebtn", text = "OK")
         self.continuebtn.size = (dp(170), dp(238))
-        self.continuebtn.disabled = False
+
+        if self.player_info.player_id == result[2]:
+            self.continuebtn.disabled = False
+        else:
+            self.continue_to_game = self.check_event = Clock.schedule_interval(lambda _: self.return_to_game(), 0.5)
+            self.continuebtn.disabled = True
+
         self.continuebtn.pos_hint = {"center_x": .5, "center_y": .5}
         self.continuebtn.on_release = lambda : self.sendContinueMove()
 
@@ -372,8 +390,15 @@ class MainApp(MDApp):
         self.root.ids.screenManager.current = "ReturnScreen"
 
     def sendContinueMove(self):
+        self.client.send_continue()
+        self.hide_cards()
         self.root.ids.screenManager.current = "GameScreen"
-        self.client.send("!CONTINUE_MOVE")
+        
+    def return_to_game(self):
+        if self.client.check_for_interrupt("!CONTINUE_MOVE"):
+            Clock.unschedule(self.continue_to_game)
+            self.hide_cards()
+            self.root.ids.screenManager.current = "GameScreen"
 
     def show_result(self,card_id,hunter_id,prey_id,elimination_id):
         screen = self.root.ids.screenManager.get_screen("ResultScreen")
@@ -408,6 +433,11 @@ class MainApp(MDApp):
     # TODO end the turn for the client
     def check_for_end_turn(self):
         pass
+
+    def sendEndMove(self):
+        self.client.send_end_move()
+        self.hide_cards()
+        self.root.ids.screenManager.current = "GameScreen"
          
         
 app = MainApp()

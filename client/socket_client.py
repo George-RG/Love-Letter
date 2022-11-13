@@ -38,6 +38,7 @@ class Client():
         return
 
     def send(self, msg):
+        self.last_msg = msg
         msg = msg.encode(FORMAT)
         msg_length = len(msg)
         send_length = str(msg_length).encode(FORMAT)
@@ -61,7 +62,7 @@ class Client():
             return msg
         else:
             print("[TIMEOUT] No messages received in " +
-                  str(TIMEOUT) + " seconds.")
+                  str(TIMEOUT) + " seconds. Last message sent was: "  + str(self.last_msg))
             return False
 
     def pop_interrupt(self):
