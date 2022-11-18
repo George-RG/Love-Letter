@@ -217,7 +217,8 @@ class Room():
                             if card_id in self.players_game_info[player_id]["hand"]:
                                 
                                 elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
-                                
+                                self.players_game_info[player_id]["hand"].remove(card_id)
+
                                 move_keys = list(self.game_moves.keys())
                                 move_keys.sort()
                                 if len(move_keys) > 0:
@@ -225,6 +226,7 @@ class Room():
                                 else:
                                     new_key = self.start_move_id
 
+                                self.player_to_eliminate = elimination
                                 self.move_to_send = f'!MOVE${new_key}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT'
                                 self.game_moves.update({new_key: {"move_id": new_key, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination}})
 
@@ -242,6 +244,9 @@ class Room():
                                         print(f"Move: {hunter_id} -> {prey_id} with {card_id} and eliminated {elimination}")
                                         print(f"Move: self.move_to_send = {self.move_to_send}")    
 
+                                    if self.player_to_eliminate > 0:
+                                        self.player_order.remove(self.player_to_eliminate)
+
                                     self.room_send_all(self.move_to_send)
                             else:
                                 self.room_send(conn, "!FAIL")
@@ -258,11 +263,16 @@ class Room():
                         self.room_send(self.players_conn_info[self.waiting_for_continue][1], f"!CONTINUE_MOVE#!INTERRUPT")
                         self.waiting_for_continue = -1
                         
+                        if self.player_to_eliminate > 0:
+                            self.player_order.remove(self.player_to_eliminate)
+
                         #Send the move to all the players
                         self.room_send_all(self.move_to_send)
 
                 elif str(msg) == "!END_MOVE":
                     if player_id == self.able_to_end:
+                        
+
                         self.able_to_end = -1
                         self.room_send(conn, "!TRUE")
 

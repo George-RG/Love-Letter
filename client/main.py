@@ -178,6 +178,7 @@ class MainApp(MDApp):
 
             if move["eliminated_id"] > 0:
                 if move["eliminated_id"] not in self.player_info.eliminated:
+                    self.player_info.player_order.remove(move["eliminated_id"])
                     self.player_info.eliminated.append(move["eliminated_id"])
 
             self.waiting_for_result = True
@@ -195,6 +196,9 @@ class MainApp(MDApp):
             
             ret = (temp[i+1],temp[+2],temp[i+3]) # (prey_id,card_id,hunter_id)
             self.showReturn(ret)
+
+        if len(self.player_info.player_order) == 0:
+            print("Game Over , You Won")
 
         if self.playing == self.player_info.player_order[0]:
             return
@@ -219,13 +223,15 @@ class MainApp(MDApp):
 
             self.show_2_cards()
         else:
-            self.showing_cards = 1
+            print(f"[DEBUG] Eliminated players: {self.player_info.eliminated}")
+            if self.player_info.player_id not in self.player_info.eliminated:
+                self.showing_cards = 1
 
-            if DEBUG:
-                print(f"[DEBUG] Showing cards: {self.showing_cards}")
-                print(f"[DEBUG] Cards: {self.player_info.cards}")
+                if DEBUG:
+                    print(f"[DEBUG] Showing cards: {self.showing_cards}")
+                    print(f"[DEBUG] Cards: {self.player_info.cards}")
 
-            self.show_1_card()
+                self.show_1_card()
 
     def hide_cards(self):
         buttonContainer = self.root.ids.screenManager.get_screen("GameScreen").ids.cardsButtons

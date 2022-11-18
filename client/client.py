@@ -291,6 +291,8 @@ class Client():
         if self.player_info.has_card(card_id) == False:
             return "!NO_CARD"
 
+        self.player_info.cards.remove(card_id)
+
         self.net.send("!PLAY_MOVE")
         self.net.send(f"!MOVE${card_id}${prey_id}${pray_card}")
 
