@@ -212,9 +212,19 @@ class MainApp(MDApp):
             self.player_info.selected_card = -1
 
             self.showing_cards = 2
+        
+            if DEBUG:
+                print(f"[DEBUG] Showing cards: {self.showing_cards}")
+                print(f"[DEBUG] Cards: {self.player_info.cards}")
+
             self.show_2_cards()
         else:
             self.showing_cards = 1
+
+            if DEBUG:
+                print(f"[DEBUG] Showing cards: {self.showing_cards}")
+                print(f"[DEBUG] Cards: {self.player_info.cards}")
+
             self.show_1_card()
 
     def hide_cards(self):
