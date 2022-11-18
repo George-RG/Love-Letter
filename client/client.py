@@ -336,7 +336,15 @@ class Client():
         if str(response) == "!TRUE":
             return "!TRUE"
         else:
-            self.send_continue()
-            return "!FALSE"
+            return self.send_continue()
 
-    
+    def send_end_move(self):
+        self.net.send("!END_MOVE")
+
+        response = self.net.pop_msg()
+        if str(response) == "!TRUE":
+            return "!TRUE"
+        else:
+            return self.send_end_move()
+
+        

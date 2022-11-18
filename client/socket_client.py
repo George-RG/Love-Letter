@@ -5,10 +5,10 @@ import time
 PORT = 5050
 HEADER = 128
 FORMAT = 'utf-8'
-SERVER_IP = "george.local"
+SERVER_IP = "88.197.36.233"
 DISCONECT_MESSAGE = "!DISCONNECT"
 TIMEOUT = 10
-DEBUG = False
+DEBUG = True
 
 
 class Client():
@@ -76,15 +76,22 @@ class Client():
     def check_for_interrupt(self,msg):
         if self.new_interrupts > 0:
             for interrupt in self.interrupts:
+                if DEBUG:
+                    print(f"[DEBUG] Checking for interrupt: {interrupt}")
                 if str(interrupt).find(str(msg)) != -1:
                     temp = interrupt
                     self.interrupts.remove(interrupt)
                     self.new_interrupts -= 1
+                    if DEBUG:
+                        print(f"[DEBUG] Interrupt found: {temp}")
                     return temp
         else:
             return False
 
     def purge_interrupts(self, msg):
+        if DEBUG:
+            print(f"[DEBUG] Purging interrupts: {msg}")
+
         if self.new_interrupts > 0:
             flag = False
             for interrupt in self.interrupts:
@@ -122,7 +129,10 @@ class Client():
 
                 if len(str(msg).split("#")) > 1:
                     if str(msg).split("#")[1] == "!INTERRUPT":
-                        self.interrupts.append(str(msg).split("$")[0])
+                        if DEBUG:
+                            print(f"[DEBUG] Interrupt received: {msg}")
+
+                        self.interrupts.append(str(msg).split("#")[0])
                         self.new_interrupts += 1
                         continue
 

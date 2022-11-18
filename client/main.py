@@ -22,6 +22,8 @@ from kivymd.uix.menu import MDDropdownMenu
 # from kivy.metrics import dp
 # from kivy.utils import get_color_from_hex
 
+DEBUG = True
+
 sys.path.append('./shared')
 import cards
 import random
@@ -146,6 +148,9 @@ class MainApp(MDApp):
         move = self.client.check_for_interrupt("!MOVE")
         if move != False:
             if len(list(self.player_info.move_log.keys())) < self.client.get_moves_num() - 1:
+                if DEBUG:
+                    print(f"Syncing: {len(list(self.player_info.move_log.keys()))} < {self.client.get_moves_num() - 1}")
+
                 self.client.sync_game()
             else:
                 move = str(move).split("$")
@@ -157,9 +162,14 @@ class MainApp(MDApp):
                 eliminated_id = int(move[5])
 
                 self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
- 
 
-            move_id = (list(self.player_info.move_log.keys()).sort())[-1]
+            # TODO - Fix this
+            keys = list(self.player_info.move_log.keys()).sort()
+
+            if DEBUG:
+                print(f"Move keys: {keys} or {list(self.player_info.move_log.keys())}")
+
+            move_id = keys[-1]
             move = self.player_info.move_log[move_id]
             
 
@@ -379,7 +389,7 @@ class MainApp(MDApp):
         if self.player_info.player_id == result[2]:
             self.continuebtn.disabled = False
         else:
-            self.continue_to_game = self.check_event = Clock.schedule_interval(lambda _: self.return_to_game(), 0.5)
+            self.continue_to_game = Clock.schedule_interval(lambda _: self.return_to_game(), 0.5)
             self.continuebtn.disabled = True
 
         self.continuebtn.pos_hint = {"center_x": .5, "center_y": .5}
@@ -392,12 +402,14 @@ class MainApp(MDApp):
     def sendContinueMove(self):
         self.client.send_continue()
         self.hide_cards()
+        Clock.schedule_interval(self.turn_event, 0.5)
         self.root.ids.screenManager.current = "GameScreen"
         
     def return_to_game(self):
         if self.client.check_for_interrupt("!CONTINUE_MOVE"):
             Clock.unschedule(self.continue_to_game)
             self.hide_cards()
+            Clock.schedule_interval(self.turn_event, 0.5)
             self.root.ids.screenManager.current = "GameScreen"
 
     def show_result(self,card_id,hunter_id,prey_id,elimination_id):
@@ -421,7 +433,6 @@ class MainApp(MDApp):
             self.continuebtn.disabled = True
 
         self.continuebtn.pos_hint = {"center_x": .5, "center_y": .5}
-        # TODO: send END_MOVE to server
         self.continuebtn.on_release = lambda : self.sendEndMove()
 
         controlContainer.add_widget(self.continuebtn)
@@ -432,7 +443,12 @@ class MainApp(MDApp):
 
     # TODO end the turn for the client
     def check_for_end_turn(self):
-        pass
+        if self.client.check_for_interrupt("!END_MOVE"):
+            Clock.unschedule(self.check_event)
+            self.hide_cards()
+            Clock.schedule_interval(self.turn_event, 0.5)
+            self.player_info.player_order.append(self.player_info.player_order.pop(0))
+            self.root.ids.screenManager.current = "GameScreen"
 
     def sendEndMove(self):
         self.client.send_end_move()

@@ -16,6 +16,8 @@ DISCONECT_MESSAGE = "!DISCONNECT"
 
 MAX_PLAYERS = 6
 
+DEBUG = True
+
 class Room():
     def __init__(self, room_id):
         self.room_id = room_id
@@ -28,7 +30,7 @@ class Room():
         self.active = False
         self.player_order = []
         self.game_moves = {}
-        self.max_move_id = 40000  #int(rand * 10000)
+        self.start_move_id = 40000  #int(rand * 10000)
 
         self.last_winner = -1
         self.leader = -1
@@ -216,17 +218,31 @@ class Room():
                                 
                                 elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
                                 
+                                move_keys = list(self.game_moves.keys())
+                                move_keys.sort()
+                                if len(move_keys) > 0:
+                                    new_key = move_keys[-1] + 1
+                                else:
+                                    new_key = self.start_move_id
+
+                                self.move_to_send = f'!MOVE${new_key}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT'
+                                self.game_moves.update({new_key: {"move_id": new_key, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination}})
+
                                 if type(elimination) == type((0,0)):
-                                    self.room_send(conn, f"!INTERUPT$!CARD${str(elimination[0])}${str(elimination[1])}${str(hunter_id)}") #PLayer_ID, Card_ID, Hunter_ID
-                                    self.room_send(self.players_conn_info[prey_id](1), f"!INTERUPT$!CARD${str(hunter_id)}${str(card_id)}${str(hunter_id)}")
+                                    self.room_send(conn, f"!SHOW_RETURN$!CARD${str(elimination[0])}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") #PLayer_ID, Card_ID, Hunter_ID
+                                    self.room_send(self.players_conn_info[prey_id](1), f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(card_id)}${str(hunter_id)}#!INTERRUPT")
 
                                     self.able_to_continue = hunter_id
                                     self.waiting_for_continue = prey_id
                                 elif type(elimination) == type(1):
                                     # TODO - check if elimination is valid
-                                    # self.room_send(conn, f"!ELIMINATION${str(elimination)}")
-                                    pass
+                                    self.able_to_end = hunter_id
+                                    
+                                    if DEBUG:
+                                        print(f"Move: {hunter_id} -> {prey_id} with {card_id} and eliminated {elimination}")
+                                        print(f"Move: self.move_to_send = {self.move_to_send}")    
 
+                                    self.room_send_all(self.move_to_send)
                             else:
                                 self.room_send(conn, "!FAIL")
                                 continue
@@ -235,17 +251,25 @@ class Room():
 
                 elif str(msg) == "!CONTINUE_MOVE":
                     if player_id == self.able_to_continue:
+                        self.able_to_end = self.able_to_continue
                         self.able_to_continue = -1
                         self.room_send(conn, "!TRUE")
 
-                        self.room_send(self.players_conn_info[self.waiting_for_continue](1), f"!INTERUPT$!CONTINUE_MOVE")
+                        self.room_send(self.players_conn_info[self.waiting_for_continue](1), f"!CONTINUE_MOVE#!INTERRUPT")
                         self.waiting_for_continue = -1
-
-                # TODO - end the move for the server
-                elif str(msg) == "!END_MOVE":
-                    pass
-
                         
+                        #Send the move to all the players
+                        self.room_send_all(self.move_to_send)
+
+                elif str(msg) == "!END_MOVE":
+                    if player_id == self.able_to_end:
+                        self.able_to_end = -1
+                        self.room_send(conn, "!TRUE")
+
+                        self.player_order.append(self.player_order.pop(0))
+
+                        for player in self.players_conn_info:
+                            self.room_send(self.players_conn_info[player](1), f"!END_MOVE#!INTERRUPT")
 
                 elif msg == DISCONECT_MESSAGE:
                     print("[ROOM " + str(self.room_id) + "] " + "ID:" + str(player_id) + " " + str(addr) + " left.\n")
@@ -299,3 +323,7 @@ class Room():
         conn.send(send_length)
         conn.send(msg)
         return
+
+    def room_send_all(self, msg):
+        for player in self.players_conn_info:
+            self.room_send(self.players_conn_info[player][1], msg)
