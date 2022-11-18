@@ -255,7 +255,7 @@ class Room():
                         self.able_to_continue = -1
                         self.room_send(conn, "!TRUE")
 
-                        self.room_send(self.players_conn_info[self.waiting_for_continue](1), f"!CONTINUE_MOVE#!INTERRUPT")
+                        self.room_send(self.players_conn_info[self.waiting_for_continue][1], f"!CONTINUE_MOVE#!INTERRUPT")
                         self.waiting_for_continue = -1
                         
                         #Send the move to all the players
@@ -269,7 +269,7 @@ class Room():
                         self.player_order.append(self.player_order.pop(0))
 
                         for player in self.players_conn_info:
-                            self.room_send(self.players_conn_info[player](1), f"!END_MOVE#!INTERRUPT")
+                            self.room_send(self.players_conn_info[player][1], f"!END_MOVE#!INTERRUPT")
 
                 elif msg == DISCONECT_MESSAGE:
                     print("[ROOM " + str(self.room_id) + "] " + "ID:" + str(player_id) + " " + str(addr) + " left.\n")

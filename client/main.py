@@ -164,10 +164,11 @@ class MainApp(MDApp):
                 self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
 
             # TODO - Fix this
-            keys = list(self.player_info.move_log.keys()).sort()
+            keys = list(self.player_info.move_log.keys())
+            keys.sort()
 
             if DEBUG:
-                print(f"Move keys: {keys} or {list(self.player_info.move_log.keys())}")
+                print(f"[DEBUG] Move keys: {keys} or {list(self.player_info.move_log.keys())}")
 
             move_id = keys[-1]
             move = self.player_info.move_log[move_id]
@@ -420,7 +421,7 @@ class MainApp(MDApp):
         if elimination_id > 0 :
             text += f" and {elimination_id} got eliminated"
         
-        screen.ids.screen.ids.Move.text = text
+        screen.ids.Move.text = text
 
         controlContainer = self.root.ids.screenManager.get_screen("ResultScreen").ids.controlButtons
         
