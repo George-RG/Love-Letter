@@ -309,6 +309,7 @@ class MainApp(MDApp):
             playerContainer.add_widget(Bt)
 
         controlContainer = self.root.ids.screenManager.get_screen("PlayerSelectionScreen").ids.controlButtons
+        controlContainer.clear_widgets()
         
         self.selectbtn = MDFillRoundFlatButton(id = "selectbtn", text = "Select")
         self.selectbtn.size = (dp(170), dp(238))
@@ -383,6 +384,7 @@ class MainApp(MDApp):
         buttonContainer.add_widget(Card)
  
         controlContainer = self.root.ids.screenManager.get_screen("ReturnScreen").ids.controlButtons
+        controlContainer.clear_widgets()
         
         self.continuebtn = MDFillRoundFlatButton(id = "continuebtn", text = "OK")
         self.continuebtn.size = (dp(170), dp(238))
@@ -424,6 +426,7 @@ class MainApp(MDApp):
         screen.ids.Move.text = text
 
         controlContainer = self.root.ids.screenManager.get_screen("ResultScreen").ids.controlButtons
+        controlContainer.clear_widgets()
         
         self.continuebtn = MDFillRoundFlatButton(id = "continuebtn", text = "OK")
         self.continuebtn.size = (dp(170), dp(238))
