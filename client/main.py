@@ -163,7 +163,6 @@ class MainApp(MDApp):
 
                 self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
 
-            # TODO - Fix this
             keys = list(self.player_info.move_log.keys())
             keys.sort()
 
