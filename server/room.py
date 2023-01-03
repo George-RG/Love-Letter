@@ -114,11 +114,11 @@ class Room():
                     if self.game_started == True:
                         self.room_send(conn, "!TRUE")
                         for i in range(len(self.player_order)):
-                            self.room_send(conn, "!ID: " + str(self.player_order[i]))
+                            self.room_send(conn, "!ID:$" + str(self.player_order[i]))
                         self.room_send(conn,  "!END")
 
                         for i in range(len(self.players_game_info[player_id]["hand"])):
-                                self.room_send(conn,"!CARD_ID: " + str(self.players_game_info[player_id]["hand"][i]))
+                                self.room_send(conn,"!CARD_ID:$" + str(self.players_game_info[player_id]["hand"][i]))
                         self.room_send(conn, "!END")
 
                     else:
@@ -164,7 +164,7 @@ class Room():
                     if self.game_started == True:
                         self.room_send(conn, "!TRUE")
                         for i in range(len(self.eliminated)):
-                            self.room_send(conn, "!ID: " + str(self.eliminated[i]))
+                            self.room_send(conn, "!ID:$" + str(self.eliminated[i]))
                         self.room_send(conn, "!END")
                     else:
                         self.room_send(conn, "!FALSE")
@@ -175,7 +175,7 @@ class Room():
                     if self.game_started == True:
                         self.room_send(conn, "!TRUE")
                         for i in range(len(self.immune)):
-                            self.room_send(conn, "!ID: " + str(self.immune[i]))
+                            self.room_send(conn, "!ID:$" + str(self.immune[i]))
                         self.room_send(conn, "!END")
                     else:
                         self.room_send(conn, "!FALSE")

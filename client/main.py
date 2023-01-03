@@ -57,6 +57,7 @@ class ResultScreen(Screen):
 
 class MainApp(MDApp):
     def build(self):
+        """Initialize the window"""
         self.theme_cls = ThemeManager()
         self.theme_cls.primary_palette = "Red"
         self.theme_cls.theme_style = "Dark"
@@ -69,6 +70,7 @@ class MainApp(MDApp):
         return Builder.load_file("kivy.kv")
     
     def createPlayer(self, name):
+        """Initialize all the game variables """
         self.player_info = player.Player(name)
         self.player_info.choose_player = lambda ex, id: self.selectPlayer(ex, id)
         self.player_info.choose_card = lambda id: self.selectTargetCard(id)
@@ -77,6 +79,7 @@ class MainApp(MDApp):
         self.playing = -1
 
     def sendCommand(self, text):
+        """Function to handle command sending from the UI to the network interface and eventualy the server"""
         commandList = {"create": self.client.create_room, "join": self.client.join_room, "players": self.client.get_players, "start": self.client.start_game, "exit": self.client.exit, "started": self.client.has_started}
         paramList = {"create": 0, "join": 1, "players": 0, "start": 0, "exit": 0, "started": 0}
 
@@ -104,20 +107,25 @@ class MainApp(MDApp):
             label.text = str(ret)
 
     def CreateRoom(self):
+        """Order the creation of a room"""
         self.sendCommand("create")
         self.root.ids.screenManager.current = "LobbyScreen"
         self.check_event = Clock.schedule_interval(lambda _: self.check_for_start(), 0.5)
 
     def JoinRoom(self, room_id):
+        """Ask the backend to request a room join to the server"""
         self.sendCommand(f"join {room_id}")
 
         sleep(0.1)
+        # Temporary
+        # A delay is needed to wait for the responce of the server
 
         if self.player_info.room_id != 0:
             self.root.ids.screenManager.current = "LobbyScreen"
             self.check_event = Clock.schedule_interval(lambda _: self.check_for_start(), 0.5)
 
     def LeaveRoom(self):
+        """Ask the backend to exit the room"""
         self.sendCommand("exit")
         self.root.ids.screenManager.current = "MenuScreen"
         Clock.unschedule(self.check_event) 
@@ -126,33 +134,48 @@ class MainApp(MDApp):
             Clock.unschedule(self.turn_event)
 
     def exitGame(self):
+        """Ask the backend to exit the game"""
         self.sendCommand("exit")
         self.stop()
 
     def check_for_start(self):
+        """Check if the server has sent the command that the game has started"""
        
         if self.player_info.room_id == 0:
             return
 
         if self.client.started:
+            #Change tha screen to the main game screen
             self.root.ids.screenManager.current = "GameScreen"
+            #Stop checking if the game has started
             Clock.unschedule(self.check_event) 
-            # self.show_cards()
+            #Start checking if its the client's turn to play
             self.turn_event = Clock.schedule_interval(lambda _: self.check_for_turn(), 0.5)
             return 
 
+        #Order the backend to search for the interrupt that informs about the server start
         self.sendCommand("started")
 
     def check_for_turn(self):
+        """Check if it is the client's turn to play"""
 
+        #### A compromise is made here because we only check for missing moves when a new move is played
+
+        # Firstly we check if the server has send any new moves
         move = self.client.check_for_interrupt("!MOVE")
         if move != False:
+            #if a new move
+            # We check if we have alla the previous moves by comparing the client's log with the server's
             if len(list(self.player_info.move_log.keys())) < self.client.get_moves_num() - 1:
                 if DEBUG:
                     print(f"Syncing: {len(list(self.player_info.move_log.keys()))} < {self.client.get_moves_num() - 1}")
 
+                # If there are missing moves for whatever reason.
+                # Ask for a full sync from the servre
                 self.client.sync_game()
             else:
+                # If all the moves are registered.
+                # Pharse the new one and update the log
                 move = str(move).split("$")
 
                 move_id = int(move[1])
@@ -163,32 +186,39 @@ class MainApp(MDApp):
 
                 self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
 
+            # Sort all the moves
             keys = list(self.player_info.move_log.keys())
             keys.sort()
 
-            if DEBUG:
-                print(f"[DEBUG] Move keys: {keys} or {list(self.player_info.move_log.keys())}")
+            #TODO possibly a bug if there are no moves registered
 
+            # Get the last move played
             move_id = keys[-1]
             move = self.player_info.move_log[move_id]
             
 
             # TODO: Update Immunity array when the immunity cards get added
 
+            # TODO: Possible bug if the dictionaries are already updated
             if move["eliminated_id"] > 0:
                 if move["eliminated_id"] not in self.player_info.eliminated:
                     self.player_info.player_order.remove(move["eliminated_id"])
                     self.player_info.eliminated.append(move["eliminated_id"])
 
+            #Stop waiting for someone to play and show the latest move
             self.waiting_for_result = True
             Clock.unschedule(self.turn_event)
             self.show_result(move["card_id"], move["hunter_id"], move["prey_id"], move["eliminated_id"])
             return        
 
+        # If no move is waiting to be pharsed
+        # Check if anothers player move must be shown to the client
         temp = self.client.check_for_interrupt("!SHOW_RETURN")
         if temp != False:
+            #If so stop waiting for turn
             Clock.unschedule(self.turn_event)
             i = 0 
+            # pharse the message from the server
             temp = str(temp).split("$")
             while temp[i] != "!CARD":
                 i += 1
@@ -196,24 +226,33 @@ class MainApp(MDApp):
             ret = (temp[i+1],temp[+2],temp[i+3]) # (prey_id,card_id,hunter_id)
             self.showReturn(ret)
 
-        if len(self.player_info.player_order) == 0:
+        #check for win
+        if len(self.player_info.player_order) == 1 and self.player_info.player_id in self.player_info.player_order:
             print("Game Over , You Won")
 
+        # If we already updated all the info about the playing player (whether it is the client's turn or not) return
         if self.playing == self.player_info.player_order[0]:
             return
         
+        # If something has changes since the last time
+        # Update the players cards
         if self.playing != self.player_info.player_order[0]:
             self.playing = self.player_info.player_order[0]
             self.hide_cards()
 
+        
         if self.playing == self.player_info.player_id:
-            
-            if len (self.player_info.cards) == 1:
+            #If it is the client's turn
+             
+            #IF the client does not have enough cards draw
+            while len (self.player_info.cards) <= 2:
                 self.client.draw_card()
 
+            # initialize the variables
             self.player_info.selected_target = -1
             self.player_info.selected_card = -1
 
+            #update the Ui that we are shoing 2 cards
             self.showing_cards = 2
         
             if DEBUG:
@@ -223,6 +262,7 @@ class MainApp(MDApp):
             self.show_2_cards()
         else:
             print(f"[DEBUG] Eliminated players: {self.player_info.eliminated}")
+            # Else just show 1 card or 0 if the client is eliminated
             if self.player_info.player_id not in self.player_info.eliminated:
                 self.showing_cards = 1
 
@@ -233,10 +273,12 @@ class MainApp(MDApp):
                 self.show_1_card()
 
     def hide_cards(self):
+        """Remove the card images from the UI"""
         buttonContainer = self.root.ids.screenManager.get_screen("GameScreen").ids.cardsButtons
         buttonContainer.clear_widgets()  
 
     def show_1_card(self):
+        """Show 1 card on the Game Screen"""
         card_id = self.player_info.cards[0]
 
         buttonContainer = self.root.ids.screenManager.get_screen("GameScreen").ids.cardsButtons
@@ -256,6 +298,7 @@ class MainApp(MDApp):
         buttonContainer.add_widget(Card)
 
     def show_2_cards(self):
+        """Show 2 cards on the Game Screen"""
         card_id = self.player_info.cards[0]
         card_id2 = self.player_info.cards[1]
 
