@@ -5,13 +5,14 @@ import time
 PORT = 5050
 HEADER = 128
 FORMAT = 'utf-8'
-SERVER_IP = "127.0.0.2"
+SERVER_IP = "georgerg.local"
 DISCONECT_MESSAGE = "!DISCONNECT"
 TIMEOUT = 10
 DEBUG = True
 
 
 class Client():
+    """A socket inteface to talk with the server """
     def __init__(self,name):
         self.client = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.ip = SERVER_IP
@@ -38,6 +39,7 @@ class Client():
         return
 
     def send(self, msg):
+        """Send a message to the server"""
         self.last_msg = msg
         msg = msg.encode(FORMAT)
         msg_length = len(msg)
@@ -48,6 +50,7 @@ class Client():
         return
 
     def pop_msg(self):
+        """Get the first message the server sent that hasn't been seen yet"""
         wait = 0
         while self.new_msg < 1 and wait < TIMEOUT:
             time.sleep(0.1)
@@ -66,6 +69,7 @@ class Client():
             return False
 
     def pop_interrupt(self):
+        """Get the first interrupt the server sent that hasn't been seen yet"""
         if self.new_interrupts > 0:
             interrupt = self.interrupts.pop(0)
             self.new_interrupts -= 1
@@ -74,6 +78,11 @@ class Client():
             return False
 
     def check_for_interrupt(self,msg):
+        """
+        Check if a specific interrupt has been sent from the server.\n
+        Its in not neccessery for the interupt to be the exact same as the text\n
+        just to include it (ex. interrupt TEST_INTER can be serched by text TEST)
+        """
         if self.new_interrupts > 0:
             for interrupt in self.interrupts:
                 if DEBUG:
@@ -89,6 +98,7 @@ class Client():
             return False
 
     def purge_interrupts(self, msg):
+        """Remove all the interrupts containing a specific text from the waiting list"""
         if DEBUG:
             print(f"[DEBUG] Purging interrupts: {msg}")
 
@@ -104,11 +114,13 @@ class Client():
             return False
 
     def push_msg(self, msg):
+        """Push a message back to the waiting list"""
         self.messages.insert(0, msg)
         self.new_msg += 1
         return
 
     def receive(self):
+        """Wait for a message from the server"""
         msg_length = self.client.recv(HEADER).decode(FORMAT)
         if msg_length:
             msg = self.client.recv(int(msg_length)).decode(FORMAT)
@@ -116,11 +128,16 @@ class Client():
         return False
 
     def disconnect(self):
+        """Disconnect from the server"""
         self.send(DISCONECT_MESSAGE)
         self.client.close()
         return
 
     def handle_messages(self):
+        """
+        Constantly check for new messages from the server \n
+        and sort them to interrupts and messages
+        """
         while True:
             msg = self.receive()
             if msg:
@@ -141,6 +158,7 @@ class Client():
 
 
     def get_msg_list(self):
+        """Returns the whole list of messages"""
         return(self.messages)
 
     

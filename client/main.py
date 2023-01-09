@@ -2,6 +2,8 @@ import threading
 from time import sleep
 import sys
 import math
+import random
+
 
 from kivy.lang import Builder
 from kivy.uix.screenmanager import Screen
@@ -26,10 +28,8 @@ DEBUG = True
 
 sys.path.append('./shared')
 import cards
-import random
 import player
-import client
-
+from client import Client
 
 class LobbyScreen(Screen):
     pass
@@ -75,7 +75,7 @@ class MainApp(MDApp):
         self.player_info.choose_player = lambda ex, id: self.selectPlayer(ex, id)
         self.player_info.choose_card = lambda id: self.selectTargetCard(id)
         self.player_info.show_return = lambda result: self.showReturn(result)
-        self.client = client.Client(name,self.player_info)
+        self.client = Client(name,self.player_info)
         self.playing = -1
 
     def sendCommand(self, text):
@@ -341,6 +341,7 @@ class MainApp(MDApp):
     #     other.effects = [MonochromeEffect()]
 
     def selectPlayer(self, exlude, card_id):
+        """Change the screen to the player selection screen and add alla tha available players"""
         playerContainer = self.root.ids.screenManager.get_screen("PlayerSelectionScreen").ids.playersButtons
         playerContainer.clear_widgets()
 
@@ -380,10 +381,12 @@ class MainApp(MDApp):
         self.root.ids.screenManager.current = "PlayerSelectionScreen"
 
     def PlayerSelected(self, prey):
+        """This is called from the ui to update the info of the move that the player want to do"""
         self.player_info.selected_target = prey
         self.selectbtn.disabled = False
 
     def selectTargetCard(self, card_id):
+        """Changes to the card selection screen and adds alla the available cards"""
         cardContainer = self.root.ids.screenManager.get_screen("CardSelectionScreen").ids.playersButtons
         cardContainer.clear_widgets()
 
@@ -415,10 +418,15 @@ class MainApp(MDApp):
         self.root.ids.screenManager.current = "CardSelectionScreen"
 
     def TargetCardSelected(self, card):
+        """This is called from the ui to update the selected card for the move of the player"""
         self.player_info.target_card = card
         self.selectbtn.disabled = False
 
     def showReturn(self, result):
+        """
+        In case the performed move includes 2 players and both need to see a card\n
+        this function is for the player that doesnt play to be informed of the card of the other player.
+        """
         self.root.ids.screenManager.get_screen("ReturnScreen").ids.screen.ids.Owner.text = f"{result[0]}'s Card"
         
         card_id = result[1]
@@ -461,12 +469,14 @@ class MainApp(MDApp):
         self.root.ids.screenManager.current = "ReturnScreen"
 
     def sendContinueMove(self):
+        """Informs the server tha the player is ready for the next stem in the move"""
         self.client.send_continue()
         self.hide_cards()
         Clock.schedule_interval(self.turn_event, 0.5)
         self.root.ids.screenManager.current = "GameScreen"
         
     def return_to_game(self):
+        """Checks whether the other player in a two player involving move is ready"""
         if self.client.check_for_interrupt("!CONTINUE_MOVE"):
             Clock.unschedule(self.continue_to_game)
             self.hide_cards()
@@ -474,6 +484,7 @@ class MainApp(MDApp):
             self.root.ids.screenManager.current = "GameScreen"
 
     def show_result(self,card_id,hunter_id,prey_id,elimination_id):
+        """UI call to show the end of a move to the player"""
         screen = self.root.ids.screenManager.get_screen("ResultScreen")
         
         text = f"{hunter_id} played {card_id} on {prey_id}"
@@ -505,6 +516,7 @@ class MainApp(MDApp):
 
     # TODO end the turn for the client
     def check_for_end_turn(self):
+        """Checks if all players are ready to move on"""
         if self.client.check_for_interrupt("!END_MOVE"):
             Clock.unschedule(self.check_event)
             self.hide_cards()
@@ -513,6 +525,7 @@ class MainApp(MDApp):
             self.root.ids.screenManager.current = "GameScreen"
 
     def sendEndMove(self):
+        """Inform the server and alla the players that the client is ready for the next move"""
         self.client.send_end_move()
         self.hide_cards()
         self.root.ids.screenManager.current = "GameScreen"

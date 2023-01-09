@@ -3,13 +3,17 @@ import os
 import socket
 import sys
 
-import socket_client
-import player
+from socket_client import Client as Net
 DISCONECT_MESSAGE = "!DISCONNECT"
 
 class Client():
+    """
+    This class handles all the client functionality of the game\n
+    Also it handle requests for the server
+    """
+
     def __init__(self, name,player_info):
-        self.net = socket_client.Client(name)
+        self.net = Net(name)
         self.name = name
         self.player_info = player_info
         self.started = False

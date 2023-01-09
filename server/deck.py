@@ -6,6 +6,7 @@ sys.path.append('./shared')
 import cards
 
 class Deck():
+    """Class to handle the deck of cards on the server"""
     def __init__(self):
         self.deck = []
         self.discard = []

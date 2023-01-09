@@ -1,4 +1,5 @@
 class Player:
+    """A class to hold all the important info for the player"""
 
     # Create Constructor
     def __init__(self, name = "PLAYER", player_id = 0, room_id = 0, addr = " "):

@@ -19,6 +19,7 @@ MAX_PLAYERS = 6
 DEBUG = True
 
 class Room():
+    """Class to handle the game and the players of a room"""
     def __init__(self, room_id):
         self.room_id = room_id
         self.players_conn_info = {}

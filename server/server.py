@@ -23,6 +23,7 @@ def init_server():
     server.listen(10)
     
     thread = threading.Thread(target=listen, args=(server,))
+    #start the thread a deamon so it closes along withthe main program
     thread.daemon = True
     thread.start()
 
@@ -31,6 +32,7 @@ def init_server():
     return server
 
 def listen(server):
+    """Constantly check for messages from the clients"""
     while True:
         conn, addr = server.accept()
 
@@ -39,6 +41,7 @@ def listen(server):
         name = msg
 
         print("[SERVER] Connected to " + addr[0] + ":" + str(addr[1]))
+        #Create a thread to handle the communication with the client from now on
         thread = threading.Thread(target=handle_client, args=(conn, addr, name))
         thread.daemon = True
         thread.start()
@@ -52,6 +55,12 @@ def listen(server):
         print("[SERVER] " + str(threading.active_count() - 2 - active_num) + " active connection(s).\n") 
 
 def handle_client(conn, addr, name):
+    """
+    After the comminication between the server and the client is established\n
+    the communication gets handled by this function. Here are implemented \n
+    many of the commands that the client can send to interact with te server\n
+    before he gets tranfered to a room
+    """
     connected = True
 
     while connected:
@@ -60,8 +69,10 @@ def handle_client(conn, addr, name):
 
             msg = conn.recv(int(msg_length)).decode(FORMAT)
 
+            # Create a new room for the client to join
             if str(msg) == "!CREATE_ROOM" and players_joined.get(conn) == None:
                 
+                #get the next room id
                 room_id = generate_room_id()
                 send(conn, str(room_id))
 
@@ -71,6 +82,7 @@ def handle_client(conn, addr, name):
 
                 player_id = 0
 
+                #TODO Possible bug here. Player gets new id every time
                 if(players_ids.get(conn) == None):
                     player_id = generate_player_id()
                     players_ids.update({conn: (player_id, name)})
@@ -82,7 +94,10 @@ def handle_client(conn, addr, name):
 
                 players_joined.update({player_id: (addr, conn, room_id)})
 
+                # Here the player is transfered to the new room so the message handling goes there
                 room.add_player(player_id, conn, addr, True, name)
+
+                #When the player leaves the room we can update the joined list
                 players_joined.pop(player_id)
 
             elif str(msg) == "!JOIN_ROOM" and players_joined.get(conn) == None:
@@ -90,8 +105,10 @@ def handle_client(conn, addr, name):
                 room_id = conn.recv(int(room_len)).decode(FORMAT)
                 player_id = 0
 
+                #Check that the room excists 
                 if(rooms.get(int(room_id)) != None):
 
+                    #If the player has no id yet generate a new one
                     if(players_ids.get(conn) == None):
                         player_id = generate_player_id()
                         players_ids.update({conn: (player_id,name)})
@@ -106,10 +123,12 @@ def handle_client(conn, addr, name):
 
                 players_joined.update({player_id: (addr, conn, room_id)})
 
+                #Transfer the player to the room
                 rooms[int(room_id)].add_player(player_id, conn, addr, False, name)
                 players_joined.pop(player_id)
 
             elif msg == DISCONECT_MESSAGE:
+                #Remove the player from the game and close the connection
                 print("[SERVER] " + addr[0] + ":" + str(addr[1]) + " disconnected.")
                 print("[SERVER] " + str(threading.active_count() - 3 - len(rooms)) + " active connection(s).\n") 
                 connected = False
@@ -124,6 +143,7 @@ def handle_client(conn, addr, name):
                 print("[" + str(addr) + "] " + msg + "\n")
 
 def send(conn, msg):
+    """Send a message to a client"""
     msg = msg.encode(FORMAT)
     msg_length = len(msg)
     send_length = str(msg_length).encode(FORMAT)
@@ -143,6 +163,7 @@ def generate_player_id():
     return PLAYERS_INDEX
 
 def create_room(room_id):
+    """Start a room"""
     Room = room.Room(room_id)
     rooms.update({room_id: Room})
 
