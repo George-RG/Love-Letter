@@ -245,7 +245,7 @@ class MainApp(MDApp):
             #If it is the client's turn
              
             #IF the client does not have enough cards draw
-            while len (self.player_info.cards) <= 2:
+            while len (self.player_info.cards) < 2:
                 self.client.draw_card()
 
             # initialize the variables

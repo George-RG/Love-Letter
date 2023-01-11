@@ -69,8 +69,9 @@ class Client():
         
         response = self.net.pop_msg()
         # The server will either aprove the join request
-        if str(response) != "!CONNECTED" and str(response) != "!RECONNECTED":
+        if str(response) != "!CONNECTED" or str(response) != "!RECONNECTED":
             #and the server info will be updated on the client side
+
             self.player_info.room_id = room_id
             self.player_info.player_id = int(player_id) 
             self.player_info.addr = self.net.addr
