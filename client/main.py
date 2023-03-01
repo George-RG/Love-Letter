@@ -28,7 +28,7 @@ DEBUG = True
 
 sys.path.append('./shared')
 import cards
-import player
+from player import Player
 from client import Client
 
 class LobbyScreen(Screen):
@@ -71,7 +71,7 @@ class MainApp(MDApp):
     
     def createPlayer(self, name):
         """Initialize all the game variables """
-        self.player_info = player.Player(name)
+        self.player_info = Player(name)
         self.player_info.choose_player = lambda ex, id: self.selectPlayer(ex, id)
         self.player_info.choose_card = lambda id: self.selectTargetCard(id)
         self.player_info.show_return = lambda result: self.showReturn(result)

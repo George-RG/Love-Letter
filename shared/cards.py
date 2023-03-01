@@ -1,3 +1,5 @@
+from player import Player
+from client import Client
 class Card(object):
     def __init__(self):
         self.id = -1
@@ -39,7 +41,7 @@ class Guard(Card):
         self.name = "Guard"
         self.description = "Guess a player's non guard card. If you are correct, that player is eliminated."
         
-    def played(self, player, client):
+    def played(self, player : Player, client: Client):
 
         if player.selected_target == -1:
             player.choose_player([], self.id)
