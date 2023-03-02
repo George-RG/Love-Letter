@@ -8,12 +8,15 @@ class Card(object):
         self.description = "Invalid"
         
     def played(self, player, client):
+        """The function called on client side when the card is choosed to be played."""
         pass
     
     def discarded(self, player, client, prey):
+        """The function called on client side when the card is either verified for a move play or ordered to be discarded by the server."""
         pass
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        """THe server side function to answer to the played function from the client."""
         pass
     
 class Assassin(Card):
@@ -43,7 +46,10 @@ class Guard(Card):
         
     def played(self, player : Player, client: Client):
 
-        if player.selected_target == -1:
+        # Here the default is -1. 
+        # Because we call the function multiple times (for the choosen card and the choosen target)
+        # we need to check which one is the one in need of change.
+        if player.selected_target == -1: 
             player.choose_player([], self.id)
             return
         

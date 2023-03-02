@@ -280,8 +280,9 @@ class Room():
                         # If the move requires to show both players a card
                         if type(elimination) == type((0,0)):
                             # Send both players the card to show
-                            #TODO possible bug here (wrong card sent to the prey)
+                            # TODO possible bug here (wrong card sent to the prey)
                             self.room_send(conn, f"!SHOW_RETURN$!CARD${str(elimination[0])}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") #PLayer_ID, Card_ID, Hunter_ID
+                            # TODO fix this beacuse card_id is not the card to show it is the card played.
                             self.room_send(self.players_conn_info[prey_id](1), f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(card_id)}${str(hunter_id)}#!INTERRUPT")
 
                             # update this vars to have them on other functions
