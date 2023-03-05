@@ -129,11 +129,104 @@ class Baron(Card):
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         pass
 
+class Handmaid(Card):
+    def __init__(self):
+        super().__init__()
+        self.id=4
+        self.power=4
+        self.name="Handmaid"
+        self.description="Until your next turn, ignore all effects from other player's cards."
+    
+    def played(self,player,client):
+        pass
+    
+    def discarded(self, player, client, prey):
+        pass
+
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        pass
+
+class Prince(Card):
+    def __init__(self):
+        super().__init__()
+        self.id=5
+        self.power=5
+        self.name="Prince"
+        self.description="Choose any player including yourself to discard his or her hand and draw a new card."
+    
+    def played(self,player,client):
+        pass
+    
+    def discarded(self, player, client, prey):
+        pass
+
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        pass
+
+class King(Card):
+    def __init__(self):
+        super().__init__()
+        self.id=6
+        self.power=6
+        self.name="King"
+        self.description="Trade hands with another player of your choice."
+    
+    def played(self,player,client):
+        pass
+    
+    def discarded(self, player, client, prey):
+        pass
+
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        pass
+
+
+class Countess(Card):
+    def __init__(self):
+        super().__init__()
+        self.id=7
+        self.power=7
+        self.name="Countess"
+        self.description="If the King or Prince is in your hand, you must play this card."
+    
+    def played(self,player,client):
+        pass
+    
+    def discarded(self, player, client, prey):
+        pass
+
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        pass
+
+
+class Princess(Card):
+    def __init__(self):
+        super().__init__()
+        self.id=8
+        self.power=8
+        self.name="Princess"
+        self.description="If you play this card you are out of the round"
+    
+    def played(self,player,client):
+        pass
+    
+    def discarded(self, player, client, prey):
+        pass
+
+    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+        pass
+
+
 
 card_dict = {
             0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
             1: {"card": Guard(), "count": 5, "image": "./images/guard.jpg"},
-            #2: {"card": Priest, "count": 2, "image": "./images/baron.jpg"},
+            #2: {"card": Priest, "count": 2, "image": "./images/priest.jpg"},
             3: {"card": Baron(), "count": 0, "image": "./images/baron.jpg"},
+            #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
+            #5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
+            #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
+            #7: {"card": Countess(), "count": 1, "image": "./images/countess.jpg"},
+            #8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
         }
 
