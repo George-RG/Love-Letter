@@ -38,7 +38,7 @@ class Assassin(Card):
         return
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        return [0,True]
+        return 0
     
 class Guard(Card):
     def __init__(self):
@@ -80,15 +80,15 @@ class Guard(Card):
 
             eliminated.append(hunter_id)
             players_info[hunter_id]["eliminated"] = True
-            return [hunter_id,True]
+            return hunter_id
 
         if prey_card in players_info[prey_id]["hand"] :
             used.append(players_info[prey_id]["hand"].remove(prey_card))
             eliminated.append(prey_id)
             players_info[prey_id]["eliminated"] = True
-            return [prey_id,True]
+            return prey_id
 
-        return [0,True]
+        return 0
         
     
 class Priest(Card):
@@ -122,7 +122,7 @@ class Baron(Card):
             player.choose_player([], self.id)
             return
 
-        client.play_move(self.id, player.selected_target, player.target_card)
+        client.play_move(self.id, prey, prey_card)
         return
     
     def discarded(self, player, client, prey,prey_card):
@@ -141,14 +141,14 @@ class Baron(Card):
 
             eliminated.append(hunter_id)
             players_info[hunter_id]["eliminated"] = True
-            return [hunter_id,True]
+            return hunter_id
         elif  my_card>prey_card:
             used.append(players_info[prey_id]["hand"].remove(prey_card))
             eliminated.append(prey_id)
             players_info[prey_id]["eliminated"] = True
-            return [prey_id,True]
+            return prey_id
         else:
-            return [0,True]
+            return 0
 
 class Handmaid(Card):
     def __init__(self):

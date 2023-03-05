@@ -279,41 +279,35 @@ class Room():
                         self.game_moves.update({new_key: {"move_id": new_key, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination}})
 
                         # If the move requires to show both players a card
-                        if len(elimination)==3:
-                            if(elimination[2]==True):
-                                # Send both players the card to show
-                                # TODO possible bug here (wrong card sent to the prey)
-                                self.room_send(conn, f"!SHOW_RETURN$!CARD${str(elimination[0])}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") #PLayer_ID, Card_ID, Hunter_ID
-                                # TODO fix this beacuse card_id is not the card to show it is the card played.
-                                self.room_send(self.players_conn_info[prey_id](1), f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(card_id)}${str(hunter_id)}#!INTERRUPT")
+                        if type(elimination) == type((0,0)):
+                            # Send both players the card to show
+                            # TODO possible bug here (wrong card sent to the prey)
+                            self.room_send(conn, f"!SHOW_RETURN$!CARD${str(elimination[0])}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") #PLayer_ID, Card_ID, Hunter_ID
+                            # TODO fix this beacuse card_id is not the card to show it is the card played.
+                            self.room_send(self.players_conn_info[prey_id](1), f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(card_id)}${str(hunter_id)}#!INTERRUPT")
 
-                                # update this vars to have them on other functions
-                                self.able_to_continue = hunter_id
-                                self.waiting_for_continue = prey_id
-                            else:
-                                self.able_to_continue = hunter_id
-                                self.waiting_for_continue = prey_id
-                                #TODO two players exchange hands
+                            # update this vars to have them on other functions
+                            self.able_to_continue = hunter_id
+                            self.waiting_for_continue = prey_id
+                            
                         # If the move just eliminates a player
-                        elif len(elimination)==2:
-                            if(elimination[1]==True):
-                                # TODO - check if elimination is valid
-                                self.able_to_end = hunter_id
-                                
-                                if DEBUG:
-                                    print(f"Move: {hunter_id} -> {prey_id} with {card_id} and eliminated {elimination}")
-                                    print(f"Move: self.move_to_send = {self.move_to_send}")    
+                        elif type(elimination) == type(1):
+                            # TODO - check if elimination is valid
+                            self.able_to_end = hunter_id
+                            
+                            if DEBUG:
+                                print(f"Move: {hunter_id} -> {prey_id} with {card_id} and eliminated {elimination}")
+                                print(f"Move: self.move_to_send = {self.move_to_send}")    
 
-                                
-                                if self.player_to_eliminate > 0:
-                                    self.player_order.remove(self.player_to_eliminate)
-                                    #TODO create a function to fully remove the player (remove cards)
-                                    self.eliminated.append(self.player_to_eliminate)
+                            
+                            if self.player_to_eliminate > 0:
+                                self.player_order.remove(self.player_to_eliminate)
+                                #TODO create a function to fully remove the player (remove cards)
+                                self.eliminated.append(self.player_to_eliminate)
 
-                                self.room_send_all(self.move_to_send)
-                            else:
-                                #TODO the player discards their hand
-                                self.room_send_all(self.move_to_send)
+                            self.room_send_all(self.move_to_send)
+                            
+
                         print(elimination)
 
                 # A message from the client to continue when he is shown an opponents card
