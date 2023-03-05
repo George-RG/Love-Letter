@@ -39,7 +39,7 @@ class Assassin(Card):
         return
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        pass
+        return 0
     
 class Guard(Card):
     def __init__(self):
@@ -120,14 +120,38 @@ class Baron(Card):
         self.description = "Compare hands with another player. The player with the least power is eliminated."
         
     def played(self, player, client):
-        target = player.choose_player([], self.id)
-        # return "!BARON$" + str(target) + "$" + str(player.player_id)
+        if player.selected_target == -1: 
+            player.choose_player([], self.id)
+            return
+
+        self.discarded(player, client, player.selected_target, player.target_card)
+        return
     
-    def discarded(self, player, client, prey):
-        pass
+    def discarded(self, player, client, prey,prey_card):
+        client.play_move(self.id, prey, prey_card)
+        return
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        pass
+        if prey_card == -1:
+            return -1
+
+        my_card = players_info[hunter_id]["hand"][1]
+        if my_card<prey_card:
+            used.append(players_info[prey_id]["hand"].remove(0))
+
+            while len(players_info[hunter_id]["hand"]) != 0:
+                used.append(players_info[hunter_id]["hand"].pop())
+
+            eliminated.append(hunter_id)
+            players_info[hunter_id]["eliminated"] = True
+            return hunter_id
+        elif  my_card>prey_card:
+            used.append(players_info[prey_id]["hand"].remove(prey_card))
+            eliminated.append(prey_id)
+            players_info[prey_id]["eliminated"] = True
+            return prey_id
+        else:
+            return 0
 
 class Handmaid(Card):
     def __init__(self):
@@ -221,8 +245,8 @@ class Princess(Card):
 card_dict = {
             0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
             1: {"card": Guard(), "count": 5, "image": "./images/guard.jpg"},
-            #2: {"card": Priest, "count": 2, "image": "./images/priest.jpg"},
-            3: {"card": Baron(), "count": 0, "image": "./images/baron.jpg"},
+            #2: {"card": Priest, "count": 0, "image": "./images/baron.jpg"},
+            3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
             #5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
