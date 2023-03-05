@@ -391,7 +391,7 @@ class MainApp(MDApp):
         cardContainer.clear_widgets()
 
         for card in cards.card_dict.keys():
-            if card == 1:
+            if card == 1 or card == 0: #if the card is the guard or the assassin
                 continue
 
             obj = cards.card_dict[card]["card"]

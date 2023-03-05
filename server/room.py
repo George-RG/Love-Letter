@@ -17,7 +17,7 @@ DISCONECT_MESSAGE = "!DISCONNECT"
 MIN_PLAYERS = 1
 MAX_PLAYERS = 6
 
-DEBUG = False
+DEBUG = True
 
 class Room():
     """Class to handle the game and the players of a room"""
@@ -259,8 +259,9 @@ class Room():
                             
                         # Run the card code
                         elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
-                        # Remove the card from the player
-                        self.players_game_info[player_id]["hand"].remove(card_id)
+                        # Remove the card from the player if he is not eliminated
+                        if hunter_id != elimination:
+                            self.players_game_info[player_id]["hand"].remove(card_id)
 
                         # Get a key for the move
                         move_keys = list(self.game_moves.keys())

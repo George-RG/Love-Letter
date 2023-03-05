@@ -1,5 +1,8 @@
+import sys
+sys.path.append('./client')
 from player import Player
 from client import Client
+
 class Card(object):
     def __init__(self):
         self.id = -1
@@ -28,10 +31,12 @@ class Assassin(Card):
         self.description = "If a player targets you with a Guard, you eliminate them and discard this card."
     
     def played(self, player, client):
-        pass
+        self.discarded(player, client)
+        return
 
-    def discarded(self, player, client, prey):
-        pass
+    def discarded(self, player, client):
+        client.play_move(self.id)
+        return
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         pass
@@ -58,6 +63,7 @@ class Guard(Card):
             return
 
         self.discarded(player, client, player.selected_target, player.target_card)
+        return
 
     
     def discarded(self, player, client, prey, prey_card):
@@ -125,9 +131,9 @@ class Baron(Card):
 
 
 card_dict = {
-            #0: {"card": Assassin, "count": 1, "image": "./images/guard.jpg"},
+            0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
             1: {"card": Guard(), "count": 5, "image": "./images/guard.jpg"},
             #2: {"card": Priest, "count": 2, "image": "./images/baron.jpg"},
-            3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
+            3: {"card": Baron(), "count": 0, "image": "./images/baron.jpg"},
         }
 

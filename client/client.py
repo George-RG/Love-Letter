@@ -339,7 +339,7 @@ class Client():
 
             move_return = self.net.pop_msg()
 
-    def play_move(self, card_id, prey_id, pray_card = -1):
+    def play_move(self, card_id, prey_id = -1, pray_card = -1):
         """
         Validate the move choosen by the cliend with the server.\n
         This also informs the server and all the other players for the move.
