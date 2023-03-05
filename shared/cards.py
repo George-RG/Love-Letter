@@ -31,11 +31,10 @@ class Assassin(Card):
         self.description = "If a player targets you with a Guard, you eliminate them and discard this card."
     
     def played(self, player, client):
-        self.discarded(player, client)
+        client.play_move(self.id)
         return
 
     def discarded(self, player, client):
-        client.play_move(self.id)
         return
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -62,12 +61,11 @@ class Guard(Card):
             player.target_card = player.choose_card(self.id)
             return
 
-        self.discarded(player, client, player.selected_target, player.target_card)
+        client.play_move(self.id, player.selected_target, player.target_card)
         return
 
     
     def discarded(self, player, client, prey, prey_card):
-        client.play_move(self.id, prey, prey_card)
         return
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -245,8 +243,8 @@ class Princess(Card):
 card_dict = {
             0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
             1: {"card": Guard(), "count": 5, "image": "./images/guard.jpg"},
-            #2: {"card": Priest, "count": 0, "image": "./images/baron.jpg"},
-            3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
+            2: {"card": Priest(), "count": 0, "image": "./images/baron.jpg"},
+            3: {"card": Baron(), "count": 0, "image": "./images/baron.jpg"},
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
             #5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
