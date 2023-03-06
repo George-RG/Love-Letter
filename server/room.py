@@ -38,6 +38,9 @@ class Room():
         self.leader = -1
         
         self.game_started = False
+
+        self.waiting_for_continue = -1
+        self.able_to_continue = -1
         
         
     def add_player(self, player_id, conn, addr, leader, name):
@@ -280,10 +283,10 @@ class Room():
                             self.room_send(conn, f"!SHOW_RETURN$!CARD${str(prey_id)}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") #PLayer_ID, Card_ID, Hunter_ID
                             if(elimination[0]!=-1):
                                 self.room_send(self.players_conn_info[prey_id][1], f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(elimination[0])}${str(hunter_id)}#!INTERRUPT")
+                                self.waiting_for_continue = prey_id
 
-                            # update this vars to have them on other functions
+                            # update this var to have them on other functions
                             self.able_to_continue = hunter_id
-                            self.waiting_for_continue = prey_id
 
                             # Temporaty save the move until confirmation from the client is sent to inform all the players
                             self.player_to_eliminate = elimination[2]
@@ -327,8 +330,10 @@ class Room():
                         self.able_to_continue = -1
                         self.room_send(conn, "!TRUE")
 
-                        self.room_send(self.players_conn_info[self.waiting_for_continue][1], f"!CONTINUE_MOVE#!INTERRUPT")
-                        self.waiting_for_continue = -1
+                        # If only the hunter is shown a card (priest)
+                        if self.waiting_for_continue > 0:
+                            self.room_send(self.players_conn_info[self.waiting_for_continue][1], f"!CONTINUE_MOVE#!INTERRUPT")
+                            self.waiting_for_continue = -1
                         
                         if self.player_to_eliminate > 0:
                             self.player_order.remove(self.player_to_eliminate)
