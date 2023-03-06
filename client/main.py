@@ -432,7 +432,7 @@ class MainApp(MDApp):
         In case the performed move includes 2 players and both need to see a card\n
         this function is for the player that doesnt play to be informed of the card of the other player.
         """
-        #self.root.ids.screenManager.get_screen("ReturnScreen").ids.screen.ids.Owner.text = f"{result[0]}'s Card"
+        self.root.ids.screenManager.get_screen("ReturnScreen").ids.Owner.text = f"{result[0]}'s Card"
         
         card_id = result[1]
 
