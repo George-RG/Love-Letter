@@ -101,14 +101,18 @@ class Priest(Card):
         self.description = "Look at another player's card."
         
     def played(self, player, client):
-        client.play_move(self.id)
+        if player.selected_target == -1: 
+            player.choose_player([], self.id)
+            return
+
+        client.play_move(self.id, player.selected_target, player.target_card)
         return
     
     def discarded(self, player, client, prey):
         return
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        return -1
+        return (-1,players_info[prey_id]["hand"][0],-1)
     
 class Baron(Card):
     def __init__(self):
@@ -254,9 +258,9 @@ class Princess(Card):
 
 card_dict = {
             0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
-            1: {"card": Guard(), "count": 5, "image": "./images/guard.jpg"},
+            1: {"card": Guard(), "count": 1, "image": "./images/guard.jpg"},
             2: {"card": Priest(), "count": 2, "image": "./images/priest.jpg"},
-            3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
+            3: {"card": Baron(), "count": 1, "image": "./images/baron.jpg"},
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
             #5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},

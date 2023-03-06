@@ -278,15 +278,15 @@ class Room():
 
                             # Send both players the card to show
                             self.room_send(conn, f"!SHOW_RETURN$!CARD${str(prey_id)}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") #PLayer_ID, Card_ID, Hunter_ID
-                            self.room_send(self.players_conn_info[prey_id][1], f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(elimination[0])}${str(hunter_id)}#!INTERRUPT")
+                            if(elimination[0]!=-1):
+                                self.room_send(self.players_conn_info[prey_id][1], f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(elimination[0])}${str(hunter_id)}#!INTERRUPT")
 
                             # update this vars to have them on other functions
                             self.able_to_continue = hunter_id
                             self.waiting_for_continue = prey_id
 
-                            if elimination[2] > 0:
-                                # Temporaty save the move until confirmation from the client is sent to inform all the players
-                                self.player_to_eliminate = elimination[2]
+                            # Temporaty save the move until confirmation from the client is sent to inform all the players
+                            self.player_to_eliminate = elimination[2]
 
                             # Store the move on the log
                             self.game_moves.update({new_key: {"move_id": new_key, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination[2]}})

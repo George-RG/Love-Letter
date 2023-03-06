@@ -22,6 +22,7 @@ class Deck():
         self.cards_left = len(self.deck)
 
     def draw(self) :
+        #TODO check when the deck is empty and can't draw a card
         self.cards_left -= 1
         return self.deck.pop()
 
