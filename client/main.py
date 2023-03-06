@@ -164,8 +164,13 @@ class MainApp(MDApp):
         # Firstly we check if the server has send any new moves
         move = self.client.check_for_interrupt("!MOVE")
         if move != False:
+            if DEBUG:
+                print(f"Move: {move}")
+                _temp = str(move).split("$")
+                print(f"New move recieved: key: {_temp[1]} move: {_temp[3]} -> {_temp[4]} eliminated: {_temp[5]} with card {_temp[2]}")
+
             #if a new move
-            # We check if we have alla the previous moves by comparing the client's log with the server's
+            # We check if we have all the previous moves by comparing the client's log with the server's
             if len(list(self.player_info.move_log.keys())) < self.client.get_moves_num() - 1:
                 if DEBUG:
                     print(f"Syncing: {len(list(self.player_info.move_log.keys()))} < {self.client.get_moves_num() - 1}")
@@ -223,7 +228,7 @@ class MainApp(MDApp):
             while temp[i] != "!CARD":
                 i += 1
             
-            ret = (temp[i+1],temp[+2],temp[i+3]) # (prey_id,card_id,hunter_id)
+            ret = (int(temp[i+1]),int(temp[i+2]),int(temp[i+3])) # (card's player id,card_id,hunter_id)
             self.showReturn(ret)
 
         #check for win
@@ -250,7 +255,7 @@ class MainApp(MDApp):
 
             # initialize the variables
             self.player_info.selected_target = -1
-            self.player_info.selected_card = -1
+            self.player_info.target_card = -1
 
             #update the Ui that we are shoing 2 cards
             self.showing_cards = 2
@@ -427,7 +432,7 @@ class MainApp(MDApp):
         In case the performed move includes 2 players and both need to see a card\n
         this function is for the player that doesnt play to be informed of the card of the other player.
         """
-        self.root.ids.screenManager.get_screen("ReturnScreen").ids.screen.ids.Owner.text = f"{result[0]}'s Card"
+        #self.root.ids.screenManager.get_screen("ReturnScreen").ids.screen.ids.Owner.text = f"{result[0]}'s Card"
         
         card_id = result[1]
 

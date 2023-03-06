@@ -5,7 +5,7 @@ import time
 PORT = 5050
 HEADER = 128
 FORMAT = 'utf-8'
-SERVER_IP = "127.0.1.1"
+SERVER_IP = "192.168.2.53"
 DISCONECT_MESSAGE = "!DISCONNECT"
 TIMEOUT = 10
 DEBUG = True
@@ -94,8 +94,8 @@ class Client():
                     if DEBUG:
                         print(f"[DEBUG] Interrupt found: {temp}")
                     return temp
-        else:
-            return False
+
+        return False
 
     def purge_interrupts(self, msg):
         """Remove all the interrupts containing a specific text from the waiting list"""

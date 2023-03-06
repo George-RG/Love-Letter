@@ -38,7 +38,7 @@ class Assassin(Card):
         return
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        return 0
+        return -1
     
 class Guard(Card):
     def __init__(self):
@@ -62,6 +62,7 @@ class Guard(Card):
             return
 
         client.play_move(self.id, player.selected_target, player.target_card)
+        
         return
 
     
@@ -88,7 +89,7 @@ class Guard(Card):
             players_info[prey_id]["eliminated"] = True
             return prey_id
 
-        return 0
+        return -1
         
     
 class Priest(Card):
@@ -107,7 +108,7 @@ class Priest(Card):
         return
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        return 0
+        return -1
     
 class Baron(Card):
     def __init__(self):
@@ -129,28 +130,38 @@ class Baron(Card):
         return
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        enemy_card = players_info[prey_id]["hand"][0]
+        enemy_card_id = players_info[prey_id]["hand"][0]
+        
         if(players_info[hunter_id]["hand"][0]==3):
-            my_card = players_info[hunter_id]["hand"][1]
+            hunter_card_id = players_info[hunter_id]["hand"][1]
         else:
-            my_card = players_info[hunter_id]["hand"][0]
+            hunter_card_id = players_info[hunter_id]["hand"][0]
 
-        if my_card<enemy_card:
-            used.append(players_info[prey_id]["hand"].remove(enemy_card))
+        my_power = card_dict[hunter_card_id]["card"].power
+        enemy_power = card_dict[enemy_card_id]["card"].power
+
+        if my_power < enemy_power :
+            used.append(players_info[prey_id]["hand"].remove(enemy_card_id))
 
             while len(players_info[hunter_id]["hand"]) != 0:
                 used.append(players_info[hunter_id]["hand"].pop())
 
             eliminated.append(hunter_id)
             players_info[hunter_id]["eliminated"] = True
-            return hunter_id
-        elif  my_card>enemy_card:
+            
+            return (hunter_card_id,enemy_card_id,hunter_id)
+
+        elif  my_power > enemy_power:
             used.append(players_info[prey_id]["hand"].pop(0))
+
             eliminated.append(prey_id)
             players_info[prey_id]["eliminated"] = True
-            return prey_id
+
+            return (hunter_card_id,enemy_card_id,prey_id)
+        
         else:
-            return 0
+
+            return (hunter_card_id,enemy_card_id,-1)
 
 class Handmaid(Card):
     def __init__(self):
@@ -243,7 +254,7 @@ class Princess(Card):
 
 card_dict = {
             0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
-            1: {"card": Guard(), "count": 1, "image": "./images/guard.jpg"},
+            1: {"card": Guard(), "count": 5, "image": "./images/guard.jpg"},
             2: {"card": Priest(), "count": 2, "image": "./images/priest.jpg"},
             3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
