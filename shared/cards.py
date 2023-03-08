@@ -195,15 +195,25 @@ class Prince(Card):
         self.name="Prince"
         self.description="Choose any player including yourself to discard his or her hand and draw a new card."
     
-    def played(self,player,client):
-        pass
+    def played(self, player, client):
+        #TODO fix the player selection so you can choose even yourself to discard your hand
+        if player.selected_target == -1: 
+            player.choose_player([], self.id)
+            return
+
+        client.play_move(self.id, player.selected_target, player.target_card)
+        return
     
-    def discarded(self, player, client, prey):
-        pass
-
+    def discarded(self, player, client, prey,prey_card):
+        return
+    
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
-        pass
+        #Discard all the cards of the prey
+        while len(players_info[prey_id]["hand"]) != 0:
+            used.append(players_info[prey_id]["hand"].pop())
 
+        #PlaceHolder Instead return tuple to show all players the card discarded
+        return (-1)
 class King(Card):
     def __init__(self):
         super().__init__()
@@ -262,10 +272,10 @@ class Princess(Card):
 card_dict = {
             0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
             1: {"card": Guard(), "count": 1, "image": "./images/guard.jpg"},
-            2: {"card": Priest(), "count": 60, "image": "./images/priest.jpg"},
+            2: {"card": Priest(), "count": 1, "image": "./images/priest.jpg"},
             3: {"card": Baron(), "count": 1, "image": "./images/baron.jpg"},
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
-            #5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
+            5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
             #7: {"card": Countess(), "count": 1, "image": "./images/countess.jpg"},
             #8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
