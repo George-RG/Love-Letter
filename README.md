@@ -9,3 +9,5 @@ A mobile/desktop implementation of a board game called [Love Letter](https://en.
 - [GeorgeRG](https://github.com/georgen2003)
 
 - [Mitsos](https://github.com/Jimminer)
+
+- [Teo](https://github.com/TeoMal)
