@@ -72,7 +72,7 @@ class MainApp(MDApp):
     def createPlayer(self, name):
         """Initialize all the game variables """
         self.player_info = Player(name)
-        self.player_info.choose_player = lambda ex, id: self.selectPlayer(ex, id)
+        self.player_info.choose_player = lambda id, ex = None: self.selectPlayer(id, ex)
         self.player_info.choose_card = lambda id: self.selectTargetCard(id)
         self.player_info.show_return = lambda result: self.showReturn(result)
         self.client = Client(name,self.player_info)
@@ -249,7 +249,7 @@ class MainApp(MDApp):
         if self.playing == self.player_info.player_id:
             #If it is the client's turn
              
-            #IF the client does not have enough cards draw
+            #If the client does not have enough cards draw
             while len (self.player_info.cards) < 2:
                 self.client.draw_card()
 
@@ -270,6 +270,10 @@ class MainApp(MDApp):
             # Else just show 1 card or 0 if the client is eliminated
             if self.player_info.player_id not in self.player_info.eliminated:
                 self.showing_cards = 1
+
+                #If the client does not have enough cards draw
+                while len (self.player_info.cards) < 1:
+                    self.client.draw_card()
 
                 if DEBUG:
                     print(f"[DEBUG] Showing cards: {self.showing_cards}")
@@ -345,8 +349,11 @@ class MainApp(MDApp):
     #     selected.effects = []
     #     other.effects = [MonochromeEffect()]
 
-    def selectPlayer(self, exlude, card_id):
+    def selectPlayer(self, card_id, exclude = None):
         """Change the screen to the player selection screen and add alla tha available players"""
+        if exclude == None:
+            exclude = [self.player_info.player_id]
+
         playerContainer = self.root.ids.screenManager.get_screen("PlayerSelectionScreen").ids.playersButtons
         playerContainer.clear_widgets()
 
@@ -367,7 +374,7 @@ class MainApp(MDApp):
                 Bt.disabled = True
                 Bt.md_bg_color = self.theme_cls.bg_normal
 
-            if player in exlude:
+            if player in exclude:
                 Bt.disabled = True
 
             playerContainer.add_widget(Bt)

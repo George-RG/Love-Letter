@@ -54,7 +54,7 @@ class Guard(Card):
         # Because we call the function multiple times (for the choosen card and the choosen target)
         # we need to check which one is the one in need of change.
         if player.selected_target == -1: 
-            player.choose_player([], self.id)
+            player.choose_player(self.id)
             return
         
         if player.target_card == -1:
@@ -102,7 +102,7 @@ class Priest(Card):
         
     def played(self, player, client):
         if player.selected_target == -1: 
-            player.choose_player([], self.id)
+            player.choose_player(self.id)
             return
 
         client.play_move(self.id, player.selected_target, player.target_card)
@@ -127,7 +127,7 @@ class Baron(Card):
         
     def played(self, player, client):
         if player.selected_target == -1: 
-            player.choose_player([], self.id)
+            player.choose_player(self.id)
             return
 
         client.play_move(self.id, player.selected_target, player.target_card)
@@ -196,9 +196,8 @@ class Prince(Card):
         self.description="Choose any player including yourself to discard his or her hand and draw a new card."
     
     def played(self, player, client):
-        #TODO fix the player selection so you can choose even yourself to discard your hand
         if player.selected_target == -1: 
-            player.choose_player([], self.id)
+            player.choose_player(self.id,[])
             return
 
         client.play_move(self.id, player.selected_target, player.target_card)
@@ -214,6 +213,7 @@ class Prince(Card):
 
         #PlaceHolder Instead return tuple to show all players the card discarded
         return (-1)
+    
 class King(Card):
     def __init__(self):
         super().__init__()
