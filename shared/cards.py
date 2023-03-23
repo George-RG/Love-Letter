@@ -14,8 +14,8 @@ class Card(object):
         """The function called on client side when the card is choosed to be played."""
         pass
     
-    def discarded(self, player, client, prey):
-        """The function called on client side when the card is either verified for a move play or ordered to be discarded by the server."""
+    def discarded(self, discarder_id: int):
+        """The function called on both client and server side when the card is either verified for a move play or ordered to be discarded by the server."""
         pass
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -108,7 +108,7 @@ class Priest(Card):
         client.play_move(self.id, player.selected_target, player.target_card)
         return
     
-    def discarded(self, player, client, prey):
+    def discarded(self, discarder_id: int):
         return
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -181,7 +181,7 @@ class Handmaid(Card):
     def played(self,player,client):
         pass
     
-    def discarded(self, player, client, prey):
+    def discarded(self, discarder_id: int):
         pass
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -225,7 +225,7 @@ class King(Card):
     def played(self,player,client):
         pass
     
-    def discarded(self, player, client, prey):
+    def discarded(self, discarder_id: int):
         pass
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -243,7 +243,7 @@ class Countess(Card):
     def played(self,player,client):
         pass
     
-    def discarded(self, player, client, prey):
+    def discarded(self, discarder_id: int):
         pass
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -261,7 +261,7 @@ class Princess(Card):
     def played(self,player,client):
         pass
     
-    def discarded(self, player, client, prey):
+    def discarded(self, discarder_id: int):
         pass
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
@@ -281,3 +281,10 @@ card_dict = {
             #8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
         }
 
+
+def removeCard(card_id : int, discarder_id: int, card_list : list, used : list = None):
+    temp = card_list.remove(card_id)
+    if used is not None:
+        used.append(temp)
+
+    return card_dict[temp]["card"].discard(discarder_id)

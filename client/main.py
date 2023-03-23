@@ -191,6 +191,8 @@ class MainApp(MDApp):
 
                 self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
 
+            #TODO remove assasin card from the player's hand when used
+
             # Sort all the moves
             keys = list(self.player_info.move_log.keys())
             keys.sort()
@@ -266,7 +268,8 @@ class MainApp(MDApp):
 
             self.show_2_cards()
         else:
-            print(f"[DEBUG] Eliminated players: {self.player_info.eliminated}")
+            if DEBUG:
+                print(f"[DEBUG] Eliminated players: {self.player_info.eliminated}")
             # Else just show 1 card or 0 if the client is eliminated
             if self.player_info.player_id not in self.player_info.eliminated:
                 self.showing_cards = 1

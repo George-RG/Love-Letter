@@ -7,6 +7,7 @@ from math import floor
 
 sys.path.append('./shared')
 import cards
+from cards import removeCard
 import deck
 
 PORT = 5050
@@ -265,7 +266,7 @@ class Room():
                         
                         # Remove the card from the player if he has not already lost
                         if len(self.players_game_info[player_id]["hand"]) != 0:
-                            self.players_game_info[player_id]["hand"].remove(card_id)
+                            removeCard(card_id, player_id, self.players_game_info[player_id]["hand"], self.used_cards)
 
                         # Get a key for the move
                         move_keys = list(self.game_moves.keys())
