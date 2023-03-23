@@ -34,8 +34,8 @@ class Assassin(Card):
         client.play_move(self.id)
         return
 
-    def discarded(self, player, client):
-        return
+    def discarded(self, discarder_id: int):
+        pass
 
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         return -1
@@ -66,8 +66,8 @@ class Guard(Card):
         return
 
     
-    def discarded(self, player, client, prey, prey_card):
-        return
+    def discarded(self, discarder_id: int):
+        pass
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         if prey_card == -1:
@@ -109,7 +109,7 @@ class Priest(Card):
         return
     
     def discarded(self, discarder_id: int):
-        return
+        pass
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         enemy_card_id = players_info[prey_id]["hand"][0]
@@ -133,8 +133,8 @@ class Baron(Card):
         client.play_move(self.id, player.selected_target, player.target_card)
         return
     
-    def discarded(self, player, client, prey,prey_card):
-        return
+    def discarded(self, discarder_id: int):
+        pass
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         enemy_card_id = players_info[prey_id]["hand"][0]
@@ -203,8 +203,8 @@ class Prince(Card):
         client.play_move(self.id, player.selected_target, player.target_card)
         return
     
-    def discarded(self, player, client, prey,prey_card):
-        return
+    def discarded(self, discarder_id: int):
+        pass
     
     def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
         #Discard all the cards of the prey
@@ -283,8 +283,7 @@ card_dict = {
 
 
 def removeCard(card_id : int, discarder_id: int, card_list : list, used : list = None):
-    temp = card_list.remove(card_id)
+    temp = card_list.pop(card_id)
     if used is not None:
         used.append(temp)
-
-    return card_dict[temp]["card"].discard(discarder_id)
+    return card_dict[temp]["card"].discarded(discarder_id)
