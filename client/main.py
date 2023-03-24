@@ -502,7 +502,10 @@ class MainApp(MDApp):
         """UI call to show the end of a move to the player"""
         screen = self.root.ids.screenManager.get_screen("ResultScreen")
         
-        text = f"{hunter_id} played {card_id} on {prey_id}"
+        if (prey_id != -1):
+            text = f"{hunter_id} played {card_id} on {prey_id}"
+        else:            
+            text = f"{hunter_id} played {card_id}"
 
         if elimination_id > 0 :
             text += f" and {elimination_id} got eliminated"

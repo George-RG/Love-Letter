@@ -6,6 +6,8 @@ import sys
 from socket_client import Client as Net
 DISCONECT_MESSAGE = "!DISCONNECT"
 
+DEBUG = True
+
 class Client():
     """
     This class handles all the client functionality of the game\n
@@ -359,6 +361,9 @@ class Client():
         # send the move
         # We choose here not to update the move log in case the move is not valid 
         self.net.send(f"!MOVE${card_id}${prey_id}${pray_card}")
+
+        if DEBUG:
+            print(f"[DEBUG]Sending move: !MOVE${card_id}${prey_id}${pray_card} (played card: {card_id} on {prey_id} with guess {pray_card})")
 
     def send(self, msg):
         """A helper function to connect the client with the network inteface and send messages"""

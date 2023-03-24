@@ -271,11 +271,11 @@ class Princess(Card):
 
 card_dict = {
             0: {"card": Assassin(), "count": 1, "image": "./images/assassin.jpg"},
-            1: {"card": Guard(), "count": 1, "image": "./images/guard.jpg"},
-            2: {"card": Priest(), "count": 1, "image": "./images/priest.jpg"},
-            3: {"card": Baron(), "count": 1, "image": "./images/baron.jpg"},
+            1: {"card": Guard(), "count": 5, "image": "./images/guard.jpg"},
+            2: {"card": Priest(), "count": 2, "image": "./images/priest.jpg"},
+            3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
-            5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
+            #5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
             #7: {"card": Countess(), "count": 1, "image": "./images/countess.jpg"},
             #8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
@@ -283,7 +283,13 @@ card_dict = {
 
 
 def removeCard(card_id : int, discarder_id: int, card_list : list, used : list = None):
-    temp = card_list.pop(card_id)
+    """Removes a card from a list and adds it to the used list if provided"""
+
+    if card_id not in card_list:
+        raise Exception("Card not in list")
+    
+    card_list.remove(card_id)
     if used is not None:
-        used.append(temp)
-    return card_dict[temp]["card"].discarded(discarder_id)
+        used.append(card_id)
+
+    return card_dict[card_id]["card"].discarded(discarder_id)
