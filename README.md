@@ -6,7 +6,7 @@ A mobile/desktop implementation of a board game called [Love Letter](https://en.
 
 ## Developers
 
-- [GeorgeRG](https://github.com/georgen2003)
+- [GeorgeRG](https://github.com/George-RG)
 
 - [Mitsos](https://github.com/Jimminer)
 
