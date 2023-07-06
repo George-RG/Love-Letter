@@ -4,6 +4,7 @@ import socket
 import sys
 
 from socket_client import Client as Net
+from player import Player
 DISCONECT_MESSAGE = "!DISCONNECT"
 
 DEBUG = True
@@ -14,9 +15,10 @@ class Client():
     Also it handle requests for the server
     """
 
-    def __init__(self, name,player_info):
+    def __init__(self, name,player_info : Player):
         self.net = Net(name)
         self.name = name
+        self.player_info: Player
         self.player_info = player_info
         self.started = False
         self.player_info.player_order = []

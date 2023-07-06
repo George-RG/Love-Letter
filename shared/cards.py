@@ -10,7 +10,7 @@ class Card(object):
         self.name = "Invalid"
         self.description = "Invalid"
         
-    def played(self, player, client):
+    def played(self, player: Player, client: Client):
         """The function called on client side when the card is choosed to be played."""
         pass
     
@@ -18,7 +18,7 @@ class Card(object):
         """The function called on both client and server side when the card is either verified for a move play or ordered to be discarded by the server."""
         pass
     
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         """THe server side function to answer to the played function from the client."""
         pass
     
@@ -30,14 +30,14 @@ class Assassin(Card):
         self.name = "Assassin"
         self.description = "If a player targets you with a Guard, you eliminate them and discard this card."
     
-    def played(self, player, client):
+    def played(self, player: Player, client: Client):
         client.play_move(self.id)
         return
 
     def discarded(self, discarder_id: int):
         pass
 
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: list, prey_id: list, prey_card: list, players_info, eliminated: list, used: list):
         return -1
     
 class Guard(Card):
@@ -69,7 +69,7 @@ class Guard(Card):
     def discarded(self, discarder_id: int):
         pass
     
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         if prey_card == -1:
             return -1
 
@@ -100,7 +100,7 @@ class Priest(Card):
         self.name = "Priest"
         self.description = "Look at another player's card."
         
-    def played(self, player, client):
+    def played(self, player: Player, client: Client):
         if player.selected_target == -1: 
             player.choose_player(self.id)
             return
@@ -111,7 +111,7 @@ class Priest(Card):
     def discarded(self, discarder_id: int):
         pass
     
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         enemy_card_id = players_info[prey_id]["hand"][0]
 
         return (-1,enemy_card_id,-1)
@@ -125,7 +125,7 @@ class Baron(Card):
         self.name = "Baron"
         self.description = "Compare hands with another player. The player with the least power is eliminated."
         
-    def played(self, player, client):
+    def played(self, player: Player, client: Client):
         if player.selected_target == -1: 
             player.choose_player(self.id)
             return
@@ -136,7 +136,7 @@ class Baron(Card):
     def discarded(self, discarder_id: int):
         pass
     
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated : list, used: list):
         enemy_card_id = players_info[prey_id]["hand"][0]
         
         if(players_info[hunter_id]["hand"][0]==3):
@@ -178,13 +178,13 @@ class Handmaid(Card):
         self.name="Handmaid"
         self.description="Until your next turn, ignore all effects from other player's cards."
     
-    def played(self,player,client):
+    def played(self,player: Player,client: Client):
         pass
     
     def discarded(self, discarder_id: int):
         pass
 
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         pass
 
 class Prince(Card):
@@ -195,7 +195,7 @@ class Prince(Card):
         self.name="Prince"
         self.description="Choose any player including yourself to discard his or her hand and draw a new card."
     
-    def played(self, player, client):
+    def played(self, player: Player, client: Client):
         if player.selected_target == -1: 
             player.choose_player(self.id,[])
             return
@@ -206,7 +206,7 @@ class Prince(Card):
     def discarded(self, discarder_id: int):
         pass
     
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: list, prey_id: list, prey_card: list, players_info, eliminated: list, used: list):
         #Discard all the cards of the prey
         while len(players_info[prey_id]["hand"]) != 0:
             used.append(players_info[prey_id]["hand"].pop())
@@ -222,13 +222,13 @@ class King(Card):
         self.name="King"
         self.description="Trade hands with another player of your choice."
     
-    def played(self,player,client):
+    def played(self,player: Player,client: Client):
         pass
     
     def discarded(self, discarder_id: int):
         pass
 
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         pass
 
 
@@ -240,13 +240,13 @@ class Countess(Card):
         self.name="Countess"
         self.description="If the King or Prince is in your hand, you must play this card."
     
-    def played(self,player,client):
+    def played(self,player: Player,client: Client):
         pass
     
     def discarded(self, discarder_id: int):
         pass
 
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         pass
 
 
@@ -258,13 +258,13 @@ class Princess(Card):
         self.name="Princess"
         self.description="If you play this card you are out of the round"
     
-    def played(self,player,client):
+    def played(self,player: Player,client: Client):
         pass
     
     def discarded(self, discarder_id: int):
         pass
 
-    def answer(self, hunter_id, prey_id, prey_card, players_info, eliminated, used):
+    def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         pass
 
 
@@ -275,7 +275,7 @@ card_dict = {
             2: {"card": Priest(), "count": 2, "image": "./images/priest.jpg"},
             3: {"card": Baron(), "count": 2, "image": "./images/baron.jpg"},
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
-            #5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
+            5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
             #7: {"card": Countess(), "count": 1, "image": "./images/countess.jpg"},
             #8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
