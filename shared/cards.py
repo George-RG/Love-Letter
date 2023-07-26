@@ -35,7 +35,7 @@ class Assassin(Card):
         return
 
     def discarded(self, discarder_id: int):
-        pass
+        return -1
 
     def answer(self, hunter_id: list, prey_id: list, prey_card: list, players_info, eliminated: list, used: list):
         return -1
@@ -67,28 +67,27 @@ class Guard(Card):
 
     
     def discarded(self, discarder_id: int):
-        pass
+        return -1
     
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         if prey_card == -1:
             return -1
+        
+        # Remove the card from the hunters hand
+        removeCard(1, hunter_id, players_info[hunter_id]["hand"], used)
 
+        # Check if the prey has the assassin card
         if 0 in players_info[prey_id]["hand"]:
-            used.append(players_info[prey_id]["hand"].remove(0))
-
-            while len(players_info[hunter_id]["hand"]) != 0:
-                used.append(players_info[hunter_id]["hand"].pop())
-
-            eliminated.append(hunter_id)
-            players_info[hunter_id]["eliminated"] = True
+            # If so remove it and eliminate the hunter
+            removeCard(0, prey_id, players_info[prey_id]["hand"], used)
             return hunter_id
 
+        # Check if the prey has the card guessed by the hunter
         if prey_card in players_info[prey_id]["hand"] :
-            used.append(players_info[prey_id]["hand"].remove(prey_card))
-            eliminated.append(prey_id)
-            players_info[prey_id]["eliminated"] = True
+            # If so eliminate the prey
             return prey_id
 
+        # If the prey does not have the card guessed by the hunter
         return -1
         
     
@@ -109,11 +108,16 @@ class Priest(Card):
         return
     
     def discarded(self, discarder_id: int):
-        pass
+        return -1
     
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
+        
+        # Remove the card from the hunters hand
+        removeCard(2, hunter_id, players_info[hunter_id]["hand"], used)
+
         enemy_card_id = players_info[prey_id]["hand"][0]
 
+        # Return the card id of the enemy
         return (-1,enemy_card_id,-1)
 
     
@@ -134,7 +138,7 @@ class Baron(Card):
         return
     
     def discarded(self, discarder_id: int):
-        pass
+        return -1
     
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated : list, used: list):
         enemy_card_id = players_info[prey_id]["hand"][0]
@@ -147,27 +151,17 @@ class Baron(Card):
         my_power = card_dict[hunter_card_id]["card"].power
         enemy_power = card_dict[enemy_card_id]["card"].power
 
-        if my_power < enemy_power :
-            used.append(players_info[prey_id]["hand"].remove(enemy_card_id))
-
-            while len(players_info[hunter_id]["hand"]) != 0:
-                used.append(players_info[hunter_id]["hand"].pop())
-
-            eliminated.append(hunter_id)
-            players_info[hunter_id]["eliminated"] = True
-            
+        # The hunter lost the duel
+        if my_power < enemy_power :        
             return (hunter_card_id,enemy_card_id,hunter_id)
 
+        # The enemy lost the duel
         elif  my_power > enemy_power:
-            used.append(players_info[prey_id]["hand"].pop(0))
-
-            eliminated.append(prey_id)
-            players_info[prey_id]["eliminated"] = True
-
+            removeCard(3, hunter_id, players_info[hunter_id]["hand"], used)
             return (hunter_card_id,enemy_card_id,prey_id)
         
+        # Both cards have the same power
         else:
-
             return (hunter_card_id,enemy_card_id,-1)
 
 class Handmaid(Card):
@@ -182,7 +176,7 @@ class Handmaid(Card):
         pass
     
     def discarded(self, discarder_id: int):
-        pass
+        return -1
 
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         pass
@@ -204,15 +198,16 @@ class Prince(Card):
         return
     
     def discarded(self, discarder_id: int):
-        pass
+        return -1
     
     def answer(self, hunter_id: list, prey_id: list, prey_card: list, players_info, eliminated: list, used: list):
-        #Discard all the cards of the prey
-        while len(players_info[prey_id]["hand"]) != 0:
-            used.append(players_info[prey_id]["hand"].pop())
+        # Remove the card from the hunters hand
+        removeCard(5, hunter_id, players_info[hunter_id]["hand"], used)
+        
+        card_to_remove = players_info[prey_id]["hand"][0]
 
-        #PlaceHolder Instead return tuple to show all players the card discarded
-        return (-1)
+        # If the prey was eliminated by droping their card return his id
+        return removeCard(card_to_remove, prey_id, players_info[prey_id]["hand"], used)
     
 class King(Card):
     def __init__(self):
@@ -226,7 +221,7 @@ class King(Card):
         pass
     
     def discarded(self, discarder_id: int):
-        pass
+        return -1
 
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         pass
@@ -244,7 +239,7 @@ class Countess(Card):
         pass
     
     def discarded(self, discarder_id: int):
-        pass
+        return -1
 
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
         pass
@@ -259,13 +254,16 @@ class Princess(Card):
         self.description="If you play this card you are out of the round"
     
     def played(self,player: Player,client: Client):
-        pass
+        client.play_move(self.id, player.selected_target, player.target_card)
     
     def discarded(self, discarder_id: int):
-        pass
+        return discarder_id
 
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
-        pass
+        # Remove the card from the hunters hand
+        removeCard(8, hunter_id, players_info[hunter_id]["hand"], used)
+
+        return hunter_id
 
 
 
@@ -278,7 +276,7 @@ card_dict = {
             5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
             #7: {"card": Countess(), "count": 1, "image": "./images/countess.jpg"},
-            #8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
+            8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
         }
 
 
@@ -286,7 +284,7 @@ def removeCard(card_id : int, discarder_id: int, card_list : list, used : list =
     """Removes a card from a list and adds it to the used list if provided"""
 
     if card_id not in card_list:
-        raise Exception("Card not in list")
+        raise Exception(f"Card {card_id} not in list")
     
     card_list.remove(card_id)
     if used is not None:

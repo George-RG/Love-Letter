@@ -248,81 +248,7 @@ class Room():
                             self.room_send(conn, "!FAIL")
                             continue
 
-                        # Decode the move
-                        card_id = int(move[1])
-                        hunter_id = player_id
-                        prey_id = int(move[2])
-                        prey_card = int(move[3])
-
-                        elimination = -1
-
-                        #Check that the player actually has the card
-                        if not card_id in self.players_game_info[player_id]["hand"]:
-                            self.room_send(conn, "!FAIL")
-                            continue
-                            
-                        # Run the card code
-                        elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
-                        
-                        # Remove the card from the player if he has not already lost
-                        if len(self.players_game_info[player_id]["hand"]) != 0:
-                            removeCard(card_id, player_id, self.players_game_info[player_id]["hand"], self.used_cards)
-
-                        # Get a key for the move
-                        move_keys = list(self.game_moves.keys())
-                        move_keys.sort()
-                        if len(move_keys) > 0:
-                            new_key = move_keys[-1] + 1
-                        else:
-                            new_key = self.start_move_id
-
-                        # If the move requires to show both players a card
-                        if type(elimination) == type((0,0,0)):
-                            #elimination = (hunter_card_id, prey_card_id, eliminated_player_id)
-
-                            # Send both players the card to show
-                            self.room_send(conn, f"!SHOW_RETURN$!CARD${str(prey_id)}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") #PLayer_ID, Card_ID, Hunter_ID
-                            if(elimination[0]!=-1):
-                                self.room_send(self.players_conn_info[prey_id][1], f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(elimination[0])}${str(hunter_id)}#!INTERRUPT")
-                                self.waiting_for_continue = prey_id
-
-                            # update this var to have them on other functions
-                            self.able_to_continue = hunter_id
-
-                            # Temporaty save the move until confirmation from the client is sent to inform all the players
-                            self.player_to_eliminate = elimination[2]
-
-                            # Store the move on the log
-                            self.game_moves.update({new_key: {"move_id": new_key, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination[2]}})
-                            
-                            if DEBUG:
-                                print(f"Move: {hunter_id} -> {prey_id} with card {card_id} and eliminated {elimination[2]}")
-                                print(f"Move: self.move_to_send = !MOVE${new_key}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT")    
-                            
-                            #Ready the move to be send when the client confirms the move
-                            self.move_to_send = f'!MOVE${new_key}${card_id}${hunter_id}${prey_id}${elimination[2]}#!INTERRUPT'
-
-                        # If the move just eliminates a player
-                        elif type(elimination) == type(1):
-                            # TODO - check if elimination is valid
-                            self.able_to_end = hunter_id
-                            
-                            if DEBUG:
-                                print(f"Move: {hunter_id} -> {prey_id} with card {card_id} and eliminated {elimination}")
-                                print(f"Move: self.move_to_send = !MOVE${new_key}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT")    
-                            
-                            if elimination > 0:
-                                self.player_order.remove(elimination)
-                                #TODO create a function to fully remove the player (remove cards)
-                                self.eliminated.append(elimination)
-
-                            # Store the move on the log
-                            self.game_moves.update({new_key: {"move_id": new_key, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination}})
-
-                            self.room_send_all(f'!MOVE${new_key}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT')
-                            
-
-                        print(elimination)
+                        self.playmove(player_id, conn, move)
 
                 # A message from the client to continue when he is shown an opponents card
                 elif str(msg) == "!CONTINUE_MOVE":
@@ -337,12 +263,16 @@ class Room():
                             self.waiting_for_continue = -1
                         
                         if self.player_to_eliminate > 0:
-                            self.player_order.remove(self.player_to_eliminate)
-                            #TODO create a function to fully remove the player (remove cards)
-                            self.eliminated.append(self.player_to_eliminate)
+                            self.eliminate_player(self.player_to_eliminate, self.eliminated, self.used_cards, self.players_game_info)
+
+                        # Update the move log
+                        self.game_moves.update(self.move_to_send)
+
+                        # move = (move_id, {"move_id": move_id, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination[2]}})
+                        move = self.move_to_send.popitem()
 
                         #Send the move to all the players
-                        self.room_send_all(self.move_to_send)
+                        self.room_send_all(f'!MOVE${move[0]}${move[1]["card_id"]}${move[1]["hunter_id"]}${move[1]["prey_id"]}${move[1]["eliminated_id"]}#!INTERRUPT')
 
                 # Message to end a move
                 elif str(msg) == "!END_MOVE":
@@ -394,20 +324,13 @@ class Room():
         self.deck = deck.Deck()
         
         for player_id in self.players_conn_info.keys():
-            self.players_game_info.update({player_id: {"hand": [], "points": 0, "playing": False, "eliminated": False, "protected": False}})
+            self.players_game_info.update({player_id: {"hand": [], "points": 0, "playing": False, "protected": False}})
             self.players_game_info[player_id]["hand"].append(int(self.deck.draw()))
 
         self.players_game_info[self.player_order[0]]["playing"] = True
 
         self.active = True
 
-        # self.update_thread = threading.Thread(target=self.update)
-        # self.update_thread.daemon = True
-        # self.update_thread.start()
-
-    # def update(self):
-    #     while True:
-    #         sleep(1)
 
     def room_send(self, conn, msg):
         """Send a message from the room throw the network inteface"""
@@ -423,3 +346,91 @@ class Room():
         """Send a message to all connected players"""
         for player in self.players_conn_info:
             self.room_send(self.players_conn_info[player][1], msg)
+
+    def playmove(self,player_id,conn,move):
+        # Decode the move
+        card_id = int(move[1])
+        hunter_id = player_id
+        prey_id = int(move[2])
+        prey_card = int(move[3])
+
+        elimination = -1
+
+        if DEBUG:
+            print(f"[DEBUG] Received move: card_id: {card_id}, hunter_id: {hunter_id}, prey_id: {prey_id}, prey_card: {prey_card}")
+
+        #Check that the player actually has the card
+        if not card_id in self.players_game_info[player_id]["hand"]:
+            self.room_send(conn, "!FAIL")
+            return
+            
+        # Run the card code
+        elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
+
+        # Get an ID for the move
+        move_id = self.generate_move_key()
+
+        # If the move requires to show a card to any player
+        if type(elimination) == type((0,0,0)):
+            #elimination = (hunter_card_id, prey_card_id, eliminated_player_id)
+
+            # Send both players the card to show
+            if(elimination[1]!=-1):
+                #PLayer_ID, Card_ID, Hunter_ID
+                self.room_send(conn, f"!SHOW_RETURN$!CARD${str(prey_id)}${str(elimination[1])}${str(hunter_id)}#!INTERRUPT") 
+            
+            if(elimination[0]!=-1):
+                self.room_send(self.players_conn_info[prey_id][1], f"!SHOW_RETURN$!CARD${str(hunter_id)}${str(elimination[0])}${str(hunter_id)}#!INTERRUPT")
+                self.waiting_for_continue = prey_id
+
+            # update this var to have them on other functions
+            self.able_to_continue = hunter_id
+
+            # Temporaty save the move until confirmation from the client is sent to inform all the players
+            self.player_to_eliminate = elimination[2]
+
+            if DEBUG:
+                print(f"Move: {hunter_id} -> {prey_id} with card {card_id} and eliminated {elimination[2]}")
+                print(f"Move: self.move_to_send = !MOVE${move_id}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT")    
+            
+            #Ready the move to be send when the client confirms the move
+            self.move_to_send = {move_id: {"move_id": move_id, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination[2]}}
+
+        # If the move just eliminates a player
+        elif type(elimination) == type(1):
+            self.able_to_end = hunter_id
+            
+            if DEBUG:
+                print(f"Move: {hunter_id} -> {prey_id} with card {card_id} and eliminated {elimination}")
+                print(f"Move: self.move_to_send = !MOVE${move_id}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT")    
+            
+            if elimination > 0:
+                self.eliminate_player(elimination, self.eliminated, self.used_cards, self.players_game_info)
+
+            # Store the move on the log
+            self.game_moves.update({move_id: {"move_id": move_id, "card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id, "eliminated_id": elimination}})
+
+            self.room_send_all(f'!MOVE${move_id}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT')
+            
+        if DEBUG:
+            print(f"Move eliomination: {elimination}")
+        
+
+    def generate_move_key(self):
+        """Generate a key for the next move"""
+        move_keys = list(self.game_moves.keys())
+        move_keys.sort()
+        if len(move_keys) > 0:
+            return move_keys[-1] + 1
+        else:
+            return self.start_move_id
+        
+    def eliminate_player(self, player_id: int, eliminated: list, used: list, players_info: dict):
+        """Eliminate a player from the game"""
+        
+        while len(players_info[player_id]["hand"]) != 0:
+            used.append(players_info[player_id]["hand"].pop())
+
+        eliminated.append(player_id)
+        self.player_order.remove(player_id)
+        return

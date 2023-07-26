@@ -28,6 +28,7 @@ DEBUG = True
 
 sys.path.append('./shared')
 import cards
+from cards import removeCard
 from player import Player
 from client import Client
 
@@ -169,7 +170,7 @@ class MainApp(MDApp):
                 _temp = str(move).split("$")
                 print(f"New move recieved: key: {_temp[1]} move: {_temp[3]} -> {_temp[4]} eliminated: {_temp[5]} with card {_temp[2]}")
 
-            #if a new move
+            # If a new move is recieved
             # We check if we have all the previous moves by comparing the client's log with the server's
             if len(list(self.player_info.move_log.keys())) < self.client.get_moves_num() - 1:
                 if DEBUG:
@@ -178,6 +179,8 @@ class MainApp(MDApp):
                 # If there are missing moves for whatever reason.
                 # Ask for a full sync from the servre
                 self.client.sync_game()
+
+            # TODO this else might be redundant
             else:
                 # If all the moves are registered.
                 # Pharse the new one and update the log
@@ -191,8 +194,6 @@ class MainApp(MDApp):
 
                 self.player_info.move_log.update({move_id: {"card_id": card_id, "hunter_id": hunter_id, "prey_id": prey_id , "eliminated_id": eliminated_id}})
 
-            #TODO remove assasin card from the player's hand when used
-
             # Sort all the moves
             keys = list(self.player_info.move_log.keys())
             keys.sort()
@@ -203,6 +204,7 @@ class MainApp(MDApp):
             move_id = keys[-1]
             move = self.player_info.move_log[move_id]
             
+            self.checkForRemovedCards(move["hunter_id"], move["prey_id"], move["card_id"])
 
             # TODO: Update Immunity array when the immunity cards get added
 
@@ -220,17 +222,17 @@ class MainApp(MDApp):
 
         # If no move is waiting to be pharsed
         # Check if anothers player move must be shown to the client
-        temp = self.client.check_for_interrupt("!SHOW_RETURN")
-        if temp != False:
+        show = self.client.check_for_interrupt("!SHOW_RETURN")
+        if show != False:
             #If so stop waiting for turn
             Clock.unschedule(self.turn_event)
             i = 0 
             # pharse the message from the server
-            temp = str(temp).split("$")
-            while temp[i] != "!CARD":
+            show = str(show).split("$")
+            while show[i] != "!CARD":
                 i += 1
             
-            ret = (int(temp[i+1]),int(temp[i+2]),int(temp[i+3])) # (card's player id,card_id,hunter_id)
+            ret = (int(show[i+1]),int(show[i+2]),int(show[i+3])) # (card's player id,card_id,hunter_id)
             self.showReturn(ret)
 
         #check for win
@@ -243,9 +245,8 @@ class MainApp(MDApp):
         
         # If something has changes since the last time
         # Update the players cards
-        if self.playing != self.player_info.player_order[0]:
-            self.playing = self.player_info.player_order[0]
-            self.hide_cards()
+        self.playing = self.player_info.player_order[0]
+        self.hide_cards()
 
         
         if self.playing == self.player_info.player_id:
@@ -267,6 +268,7 @@ class MainApp(MDApp):
                 print(f"[DEBUG] Cards: {self.player_info.cards}")
 
             self.show_2_cards()
+
         else:
             if DEBUG:
                 print(f"[DEBUG] Eliminated players: {self.player_info.eliminated}")
@@ -283,6 +285,22 @@ class MainApp(MDApp):
                     print(f"[DEBUG] Cards: {self.player_info.cards}")
 
                 self.show_1_card()
+
+    def checkForRemovedCards(self, hunter_id, prey_id, card_id):
+        """
+        Check if the player must remove a card from his hand due to the played move \n
+        Returns the client's id if the client is eliminated else returns -1    
+        """
+
+        # If the client has the assassin and a guard was played on him
+        if card_id == 1 and prey_id == self.player_info.player_id and self.player_info.cards[0] == 0:
+            # Remove the assassin from the client's hand
+            return removeCard(0, self.player_info.player_id, self.player_info.cards)
+        
+        # If a prince was played on the client
+        if card_id == 5 and prey_id == self.player_info.player_id:
+            # Remove the card that the client selected
+            return removeCard(self.player_info.cards[0], self.player_info.player_id, self.player_info.cards)
 
     def hide_cards(self):
         """Remove the card images from the UI"""
@@ -347,10 +365,6 @@ class MainApp(MDApp):
         Card.on_release = lambda : cards.card_dict[card_id2]["card"].played(self.player_info, self.client)
 
         buttonContainer.add_widget(Card)
-
-    # def selectCard(self, selected, other):
-    #     selected.effects = []
-    #     other.effects = [MonochromeEffect()]
 
     def selectPlayer(self, card_id, exclude = None):
         """Change the screen to the player selection screen and add alla tha available players"""
