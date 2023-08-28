@@ -211,15 +211,20 @@ class Room():
                     while not self.active and self.game_started:
                         sleep(0)
 
-                    if len(self.players_game_info[player_id]["hand"]) >= 2:
-                        self.room_send(conn, "!FAIL")
+                    cur_cards = len(self.players_game_info[player_id]["hand"])
 
-                    if self.player_order[0] == player_id:
-                        card_id = int(self.deck.draw())
-                        self.players_game_info[player_id]["hand"].append(card_id)
-                        self.room_send(conn, str(card_id))
-                    else:
-                        self.room_send(conn, "!FAIL")
+                    if (cur_cards >= 2 and player_id == self.player_order[0]) or (cur_cards >= 1 and player_id != self.player_order[0]):
+                        self.room_send(conn, "!TO_MANY_CARDS")
+                        continue
+                    
+                    crd = self.deck.draw()
+                    if crd == False:
+                        self.room_send(conn, "!NO_CARDS")
+                        continue
+
+                    card_id = int(crd)
+                    self.players_game_info[player_id]["hand"].append(card_id)
+                    self.room_send(conn, str(card_id))
 
                 # Get the number of moves played so far
                 elif str(msg) == "!GET_MOVES_NUM":
