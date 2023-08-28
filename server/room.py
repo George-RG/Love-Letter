@@ -367,6 +367,12 @@ class Room():
         # Run the card code
         elimination = cards.card_dict[card_id]["card"].answer(hunter_id, prey_id, prey_card, self.players_game_info, self.eliminated, self.used_cards)
 
+        if elimination == "FAIL":
+            self.room_send(conn, "!FAIL")
+            return
+        
+        self.room_send(conn, "!OK")
+
         # Get an ID for the move
         move_id = self.generate_move_key()
 

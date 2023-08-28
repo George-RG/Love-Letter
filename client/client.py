@@ -15,7 +15,7 @@ class Client():
     Also it handle requests for the server
     """
 
-    def __init__(self, name,player_info : Player):
+    def __init__(self, name: str ,player_info : Player):
         self.net = Net(name)
         self.name = name
         self.player_info: Player
@@ -56,7 +56,7 @@ class Client():
 
         return "!CONNECTED" + " " + str(room_id) + " " + str(player_id)   
 
-    def join_room(self, room_id):
+    def join_room(self, room_id: int):
         """Ask the server to join an existing room"""
 
         # You can not do that whill in an other room 
@@ -180,7 +180,7 @@ class Client():
         else:
             return "!FALSE"
 
-    def check_for_interrupt(self, interrupt):
+    def check_for_interrupt(self, interrupt: str):
         return self.net.check_for_interrupt(interrupt)
 
     def get_info(self):
@@ -309,7 +309,7 @@ class Client():
 
         return "!FAIL"
 
-    def get_moves(self, move_id = -1):
+    def get_moves(self, move_id: int = -1):
         """
         Ask the server for all the moves between the move with id (move_id) and now.\n
         (move_id) can be set to -1 to get them all 
@@ -343,7 +343,7 @@ class Client():
 
             move_return = self.net.pop_msg()
 
-    def play_move(self, card_id, prey_id = -1, pray_card = -1):
+    def play_move(self, card_id: int, prey_id: int = -1, pray_card: int = -1):
         """
         Validate the move choosen by the cliend with the server.\n
         This also informs the server and all the other players for the move.
@@ -365,9 +365,19 @@ class Client():
         self.net.send(f"!MOVE${card_id}${prey_id}${pray_card}")
 
         if DEBUG:
-            print(f"[DEBUG]Sending move: !MOVE${card_id}${prey_id}${pray_card} (played card: {card_id} on {prey_id} with guess {pray_card})")
+            print(f"[DEBUG]Sent move: !MOVE${card_id}${prey_id}${pray_card} (played card: {card_id} on {prey_id} with guess {pray_card})")
 
-    def send(self, msg):
+        response = self.net.pop_msg()
+        
+        if str(response) == "!OK":
+            if DEBUG:
+                print("[DEBUG]Move was valid")
+            return
+        
+        if DEBUG:
+            print("[DEBUG]Move was invalid")   
+
+    def send(self, msg:str):
         """A helper function to connect the client with the network inteface and send messages"""
 
         self.net.send(msg)

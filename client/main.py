@@ -388,7 +388,6 @@ class MainApp(MDApp):
             Bt.size_hint = (None,None)
 
             if player == self.player_info.player_id:
-                Bt.disabled = True
                 Bt.md_bg_color = self.theme_cls.bg_normal
 
             if player in exclude:

@@ -15,7 +15,9 @@ class Card(object):
         pass
     
     def discarded(self, discarder_id: int):
-        """The function called on both client and server side when the card is either verified for a move play or ordered to be discarded by the server."""
+        """A server function that is called whenever a card is discarded even if its not played.\n
+           Returns the id of the player that was eliminated by the discard.
+        """
         pass
     
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
@@ -236,13 +238,24 @@ class Countess(Card):
         self.description="If the King or Prince is in your hand, you must play this card."
     
     def played(self,player: Player,client: Client):
-        pass
-    
+        if 5 in player.cards or 6 in player.cards:
+            return
+        
+        client.play_move(self.id, player.selected_target, player.target_card)
+        return
+        
     def discarded(self, discarder_id: int):
         return -1
 
     def answer(self, hunter_id: int, prey_id: int, prey_card: int, players_info, eliminated: list, used: list):
-        pass
+        #Check if the hunter has the king or prince
+        if 5 in players_info[hunter_id]["hand"] or 6 in players_info[hunter_id]["hand"]:
+            return "FAIL"
+        
+        # Remove the card from the hunters hand
+        removeCard(7, hunter_id, players_info[hunter_id]["hand"], used)
+
+        return -1
 
 
 class Princess(Card):
@@ -275,7 +288,7 @@ card_dict = {
             #4: {"card": Handmaid(), "count": 2, "image": "./images/handmaid.jpg"},
             5: {"card": Prince(), "count": 2, "image": "./images/prince.jpg"},
             #6: {"card": King(), "count": 1, "image": "./images/king.jpg"},
-            #7: {"card": Countess(), "count": 1, "image": "./images/countess.jpg"},
+            7: {"card": Countess(), "count": 1, "image": "./images/countess.jpg"},
             8: {"card": Princess(), "count": 1, "image": "./images/princess.jpg"},
         }
 
