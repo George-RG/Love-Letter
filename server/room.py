@@ -279,6 +279,9 @@ class Room():
                         #Send the move to all the players
                         self.room_send_all(f'!MOVE${move[0]}${move[1]["card_id"]}${move[1]["hunter_id"]}${move[1]["prey_id"]}${move[1]["eliminated_id"]}#!INTERRUPT')
 
+                        # Discard the card
+                        self.deck.discard(move[1]["card_id"])
+
                 # Message to end a move
                 elif str(msg) == "!END_MOVE":
                     if player_id == self.able_to_end:
