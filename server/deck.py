@@ -28,6 +28,9 @@ class Deck():
         self.cards_left -= 1
         return self.deck.pop()
 
+    def discard(self, card : int):
+        """Discard a card"""
+        self.discard.append(card)
 
     
 

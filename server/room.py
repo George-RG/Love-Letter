@@ -423,6 +423,8 @@ class Room():
 
             self.room_send_all(f'!MOVE${move_id}${card_id}${hunter_id}${prey_id}${elimination}#!INTERRUPT')
             
+            self.deck.discard(card_id)
+
         if DEBUG:
             print(f"Move eliomination: {elimination}")
         
